@@ -269,7 +269,7 @@ export class MainMenuScene extends Phaser.Scene {
             },
             {
               type: "system",
-              content: `Stats: HP ${agent.maxHp} | MIND ${agent.mind}`,
+              content: `Stats: HP ${agent.maxHp} | MIND ${agent.maxMind}`,
             },
           ],
           name,

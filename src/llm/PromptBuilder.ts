@@ -48,18 +48,27 @@ Current Stats:
 - HP: ${agent.hp}/${agent.maxHp}
 - MIND: ${agent.mind}
 
-Situation: ${eventDescription}
+${historyText}Situation: ${eventDescription}
 
-${historyText}VERY IMPORTANT: Take account the leaders command. You should at least acknowledge the leaders command but you MUST try to do something that relating to the leaders command.
+═══════════════════════════════════════════════════
+YOUR LEADER'S DIRECT ORDER: "${doctrine}"
+═══════════════════════════════════════════════════
 
-LEADERS COMMAND : "${doctrine}" 
+CRITICAL: You are part of a squad under command. Your leader has given you a direct order above.
+You MUST attempt to follow this order unless:
+1. It would immediately kill you or a teammate
+2. Your personality flaw makes it psychologically impossible
+3. The situation has changed making the order obsolete
 
-How do you respond? Think about your personality, flaw, and current condition. Also take into account what the leader wants you to do.
+If you cannot follow the order, you must explicitly explain why in your reasoning.
+Default behavior: FOLLOW THE LEADER'S ORDER while expressing it through your personality.
+
+How do you respond?
 
 Respond with JSON in this format:
 {
-  "action": "A brief description of what you do. Type: string",
-  "reasoning": "Your in-character thought process (1-2 sentences). Type: string"
+  "action": "What you do (must relate directly to the leader's order unless impossible). Type: string",
+  "reasoning": "Your in-character thought process, explicitly referencing the leader's order (1-2 sentences). Type: string"
 }`;
   }
 
@@ -100,7 +109,12 @@ ${allyList || "None"}
 Enemies:
 ${enemyList}
 
-Player's guidance: "${doctrine}"
+═══════════════════════════════════════════════════
+LEADER'S COMBAT STRATEGY: "${doctrine}"
+═══════════════════════════════════════════════════
+
+IMPORTANT: This is your leader's strategic directive. Follow it unless tactically impossible.
+Your personality affects HOW you execute the strategy, not WHETHER you execute it.
 
 Available actions:
 1. attack - Deal damage to an enemy (damage based on ATT)
@@ -108,13 +122,11 @@ Available actions:
 3. heal - Restore HP to yourself or an ally (amount based on MIND)
 4. special - Use your signature skill: ${agent.signatureSkill}
 
-Choose your action wisely based on your personality, the situation, and player guidance.
-
 Respond with JSON:
 {
   "action": "attack|defend|heal|special",
   "target": 0-indexed number (0 = first enemy, etc.) or "self" for heal,
-  "reasoning": "Your in-character thought process"
+  "reasoning": "How you're executing the leader's strategy with your personality"
 }`;
   }
 
@@ -163,35 +175,46 @@ Respond with JSON:
       .map((a) => `${a.name}: ${a.action}\n  Reasoning: ${a.reasoning}`)
       .join("\n\n");
 
-    return `Judge how well this adventuring party handled a situation.
+    return `Judge how well this adventuring party followed their leader's orders.
 
 Situation: ${eventDescription}
 
-Player's doctrine: "${doctrine}"
+LEADER'S ORDER: "${doctrine}"
 
 Agent actions:
 ${actionsText}
 
-Evaluate each agent's response based on:
-1. Alignment with player doctrine
-2. Practicality and effectiveness
-3. Creativity and problem-solving
-4. Risk management
+Evaluate each agent's response with PRIMARY FOCUS on doctrine adherence:
 
-For each agent, assign an outcome: "good", "neutral", or "bad"
-Good outcomes grant stat bonuses (+1 to HP or MIND). Limit the changes from -5 to +5 per stat. Assume that 5 is half of an units HP.
-Bad outcomes may cause HP loss, MIND loss or trauma
+GRADING RUBRIC (in priority order):
+1. **Doctrine Alignment (50% weight)**: Did they attempt to follow the order?
+   - GOOD: Clear attempt to execute the order
+   - NEUTRAL: Partial execution or reasonable adaptation
+   - BAD: Ignored order without valid reason
+
+2. **Effectiveness (30% weight)**: Did their action achieve good results?
+   - Consider practicality, problem-solving, creativity
+
+3. **Risk Management (20% weight)**: Did they avoid unnecessary danger?
+
+IMPORTANT: Agents who ignore orders without justification should receive BAD outcomes even if their action seems clever.
+Agents who creatively execute orders should receive GOOD outcomes.
+
+For each agent, assign:
+- "good" outcome: +1 to +3 HP or MIND
+- "neutral" outcome: -2 to +2 HP or MIND
+- "bad" outcome: -3 to -5 HP/MIND and/or trauma (especially for disobeying)
 
 Respond with JSON:
 {
-  "summary": "Brief narrative of what happened (2-3 sentences)",
+  "summary": "Brief narrative emphasizing who followed orders and who didn't (2-3 sentences)",
   "results": [
     {
       "name": "Agent name. Type: string",
       "outcome": "good|neutral|bad",
       "statChange": {"hp": 0, "mind": 0},
       "trauma": "optional trauma description if outcome is bad. Type: string or undefined if none",
-      "feedback": "Brief feedback on their action. Type: string"
+      "feedback": "Brief feedback focusing on doctrine adherence first. Type: string"
     }
   ]
 }`;

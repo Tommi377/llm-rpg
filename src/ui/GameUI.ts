@@ -13,21 +13,25 @@ export class HPBar {
   private bar: Phaser.GameObjects.Rectangle;
   private text: Phaser.GameObjects.Text;
   private container: Phaser.GameObjects.Container;
+  private colorScheme: 'health' | 'mind';
 
   constructor(
     scene: Phaser.Scene,
     x: number,
     y: number,
     width: number = 100,
-    height: number = 12
+    height: number = 12,
+    colorScheme: 'health' | 'mind' = 'health'
   ) {
     this.width = width;
+    this.colorScheme = colorScheme;
 
     this.background = scene.add.rectangle(0, 0, width, height, 0x333333);
     this.background.setOrigin(0, 0.5);
     this.background.setStrokeStyle(1, 0xffffff);
 
-    this.bar = scene.add.rectangle(0, 0, width, height, 0x00ff00);
+    const initialColor = colorScheme === 'mind' ? 0x00ccff : 0x00ff00;
+    this.bar = scene.add.rectangle(0, 0, width, height, initialColor);
     this.bar.setOrigin(0, 0.5);
 
     this.text = scene.add.text(width / 2, 0, '', {
@@ -47,9 +51,17 @@ export class HPBar {
     const percent = Math.max(0, Math.min(1, current / max));
     this.bar.width = this.width * percent;
 
-    if (percent > 0.6) this.bar.setFillStyle(0x00ff00);
-    else if (percent > 0.3) this.bar.setFillStyle(0xffff00);
-    else this.bar.setFillStyle(0xff0000);
+    if (this.colorScheme === 'mind') {
+      // Mind bar: cyan -> blue -> purple
+      if (percent > 0.6) this.bar.setFillStyle(0x00ccff); // Cyan
+      else if (percent > 0.3) this.bar.setFillStyle(0x0088ff); // Blue
+      else this.bar.setFillStyle(0x8800ff); // Purple
+    } else {
+      // Health bar: green -> yellow -> red
+      if (percent > 0.6) this.bar.setFillStyle(0x00ff00);
+      else if (percent > 0.3) this.bar.setFillStyle(0xffff00);
+      else this.bar.setFillStyle(0xff0000);
+    }
 
     if (showText) this.text.setText(`${Math.floor(current)}/${Math.floor(max)}`);
   }
@@ -73,6 +85,7 @@ export class AgentDisplay {
   private sprite: Phaser.GameObjects.Image;
   private nameText: Phaser.GameObjects.Text;
   private hpBar: HPBar;
+  private mindBar: HPBar;
   private container: Phaser.GameObjects.Container;
 
   constructor(scene: Phaser.Scene, agent: Agent, x: number, y: number) {
@@ -92,7 +105,8 @@ export class AgentDisplay {
       color: '#ffffff',
     }).setOrigin(0.5, 0.5);
 
-    this.hpBar = new HPBar(scene, 0, 40, 80, 10);
+    this.hpBar = new HPBar(scene, 0, 40, 80, 10, 'health');
+    this.mindBar = new HPBar(scene, 0, 55, 80, 10, 'mind');
 
     this.container = scene.add.container(x, y, [
       this.sprite,
@@ -105,6 +119,9 @@ export class AgentDisplay {
   update(): void {
     this.hpBar.update(this.agent.hp, this.agent.maxHp);
     this.hpBar.setPosition(this.container.x - 40, this.container.y + 40);
+
+    this.mindBar.update(this.agent.mind, this.agent.maxMind);
+    this.mindBar.setPosition(this.container.x - 40, this.container.y + 55);
 
     if (!this.agent.isAlive()) {
       this.sprite.setTint(0x666666);
@@ -144,6 +161,7 @@ export class AgentDisplay {
   destroy(): void {
     this.container.destroy();
     this.hpBar.destroy();
+    this.mindBar.destroy();
   }
 
   getX(): number { return this.container.x; }

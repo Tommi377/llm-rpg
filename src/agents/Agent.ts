@@ -8,6 +8,7 @@ export interface AgentStats {
   maxHp: number;
   attack: number;
   mind: number;
+  maxMind: number;
 }
 
 export interface AgentPersonality {
@@ -29,6 +30,7 @@ export class Agent {
   maxHp: number;
   attack: number;
   mind: number;
+  maxMind: number;
   personality: string;
   flaw: string;
   signatureSkill: string;
@@ -51,6 +53,7 @@ export class Agent {
     this.maxHp = 8;
     this.attack = 5;
     this.mind = 5;
+    this.maxMind = 5;
     this.personality = "";
     this.flaw = "";
     this.signatureSkill = "";
@@ -81,7 +84,7 @@ export class Agent {
    * Check if agent is alive
    */
   isAlive(): boolean {
-    return this.hp > 0;
+    return this.hp > 0 && this.mind > 0;
   }
 
   /**
@@ -134,7 +137,7 @@ export class Agent {
       this.hp = Math.max(0, Math.min(this.maxHp, this.hp + changes.hp));
     }
     if (changes.mind !== undefined) {
-      this.mind = Math.max(1, this.mind + changes.mind);
+      this.mind = Math.max(0, Math.min(this.maxMind, this.mind + changes.mind));
     }
   }
 
@@ -142,7 +145,7 @@ export class Agent {
    * Get a stat summary string
    */
   getStatsSummary(): string {
-    return `${this.name} | HP: ${this.hp}/${this.maxHp} | MIND: ${this.mind}`;
+    return `${this.name} | HP: ${this.hp}/${this.maxHp} | MIND: ${this.mind}/${this.maxMind}`;
   }
 
   /**
@@ -155,6 +158,7 @@ export class Agent {
       maxHp: this.maxHp,
       attack: this.attack,
       mind: this.mind,
+      maxMind: this.maxMind,
       personality: this.personality,
       flaw: this.flaw,
       signatureSkill: this.signatureSkill,
@@ -177,6 +181,7 @@ export class Agent {
     agent.maxHp = data.maxHp;
     agent.attack = data.attack;
     agent.mind = data.mind;
+    agent.maxMind = data.maxMind;
     agent.personality = data.personality;
     agent.flaw = data.flaw;
     agent.signatureSkill = data.signatureSkill;
@@ -194,7 +199,8 @@ export class Agent {
     agent.maxHp = 5 + Math.floor(Math.random() * 5); // 5-9
     agent.hp = agent.maxHp;
     agent.attack = 3 + Math.floor(Math.random() * 5); // 3-7
-    agent.mind = 3 + Math.floor(Math.random() * 5); // 3-7
+    agent.maxMind = 3 + Math.floor(Math.random() * 5); // 3-7
+    agent.mind = agent.maxMind;
 
     return agent;
   }
