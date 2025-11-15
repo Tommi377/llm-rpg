@@ -32,7 +32,7 @@ export class HPBar {
 
     this.text = scene.add.text(width / 2, 0, '', {
       fontSize: '10px',
-      color: '#ffffff',
+      color: '#f01b1bff',
     });
     this.text.setOrigin(0.5, 0.5);
 
@@ -104,7 +104,7 @@ export class AgentDisplay {
 
   update(): void {
     this.hpBar.update(this.agent.hp, this.agent.maxHp);
-    this.hpBar.setPosition(this.container.x, this.container.y + 40);
+    this.hpBar.setPosition(this.container.x - 40, this.container.y + 40);
 
     if (!this.agent.isAlive()) {
       this.sprite.setTint(0x666666);
