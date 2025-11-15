@@ -93,7 +93,7 @@ export class GamePlayScene extends Phaser.Scene {
     try {
       // Generate event
       this.currentEvent = await this.gameState.eventGenerator.generateEvent(
-        this.gameState.agents,
+        this.gameState.agents.filter((a) => a.isAlive()),
         this.gameState.eventCount,
       );
 
@@ -143,7 +143,7 @@ export class GamePlayScene extends Phaser.Scene {
       );
 
       // Stream each agent's decision one at a time
-      for (const agent of this.gameState.agents) {
+      for (const agent of this.gameState.agents.filter((a) => a.isAlive())) {
         const decision = decisions.get(agent.name);
         if (!decision) continue;
 
