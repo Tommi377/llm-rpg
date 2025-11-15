@@ -22,7 +22,7 @@ export class GamePlayScene extends Phaser.Scene {
     super({ key: "GamePlayScene" });
   }
 
-  create(): void {
+  async create(): Promise<void> {
     this.gameState = GameState.getInstance();
     this.chatLog = new ChatLog();
     this.chatInput = new ChatInput();
@@ -44,7 +44,7 @@ export class GamePlayScene extends Phaser.Scene {
 
     // Welcome
     this.chatLog.addSeparator("NEW ADVENTURE");
-    this.chatLog.system("Your party embarks on their journey...");
+    await this.chatLog.streamMessage({ type: "system", content: "Your party embarks on their journey..." });
 
     // Set up input
     this.chatInput.addSubmitButton();
@@ -79,14 +79,14 @@ export class GamePlayScene extends Phaser.Scene {
   private async startNextEvent(): Promise<void> {
     // Check if party is alive
     if (!this.gameState.isPartyAlive()) {
-      this.gameOver();
+      await this.gameOver();
       return;
     }
 
     this.gameState.incrementEvent();
 
     this.chatLog.addSeparator(`EVENT ${this.gameState.eventCount}`);
-    this.chatLog.system("Generating event...");
+    await this.chatLog.streamMessage({ type: "system", content: "Generating event..." });
 
     this.chatLog.thinking();
 
@@ -102,19 +102,20 @@ export class GamePlayScene extends Phaser.Scene {
       await this.handleNormalEvent(this.currentEvent);
     } catch (error) {
       this.chatLog.removeThinking();
-      this.chatLog.system(`Error generating event: ${error}`);
+      await this.chatLog.streamMessage({ type: "system", content: `Error generating event: ${error}` });
       this.time.delayedCall(2000, () => this.startNextEvent());
     }
   }
 
   private async handleNormalEvent(event: GeneratedEvent): Promise<void> {
-    this.chatLog.system(event.description);
+    await this.chatLog.streamMessage({ type: "system", content: event.description });
     if (event.challenge) {
-      this.chatLog.system(`Challenge: ${event.challenge}`);
+      await this.chatLog.streamMessage({ type: "system", content: `Challenge: ${event.challenge}` });
     }
-    this.chatLog.system(
-      "How will your agents respond? Enter your doctrine below.",
-    );
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: "How will your agents respond? Enter your doctrine below.",
+    });
 
     // Enable input
     this.chatInput.setEnabled(true);
@@ -128,8 +129,8 @@ export class GamePlayScene extends Phaser.Scene {
     // Update doctrine
     this.gameState.setDoctrine(doctrine);
 
-    this.chatLog.player(`Doctrine: "${doctrine}"`);
-    this.chatLog.system("Agents are deciding their actions...");
+    await this.chatLog.streamMessage({ type: "player", speaker: "You", content: `Doctrine: "${doctrine}"` });
+    await this.chatLog.streamMessage({ type: "system", content: "Agents are deciding their actions..." });
 
     if (!this.currentEvent) return;
 
@@ -168,7 +169,7 @@ export class GamePlayScene extends Phaser.Scene {
       }
 
       // Judge outcomes
-      this.chatLog.system("Judging outcomes...");
+      await this.chatLog.streamMessage({ type: "system", content: "Judging outcomes..." });
 
       this.chatLog.thinking();
 
@@ -189,7 +190,7 @@ export class GamePlayScene extends Phaser.Scene {
       this.chatLog.removeThinking();
 
       // Display results
-      this.chatLog.system(judgement.summary);
+      await this.chatLog.streamMessage({ type: "system", content: judgement.summary });
 
       // Apply results
       EventJudge.applyResults(this.gameState.agents, judgement.results);
@@ -202,7 +203,10 @@ export class GamePlayScene extends Phaser.Scene {
             : result.outcome === "bad"
               ? "✗"
               : "○";
-        this.chatLog.system(`${outcome} ${result.name}: ${result.feedback}`);
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: `${outcome} ${result.name}: ${result.feedback}`
+        });
 
         // Show stat changes
         const changes: string[] = [];
@@ -216,11 +220,17 @@ export class GamePlayScene extends Phaser.Scene {
           );
 
         if (changes.length > 0) {
-          this.chatLog.system(`  Changes: ${changes.join(", ")}`);
+          await this.chatLog.streamMessage({
+            type: "system",
+            content: `  Changes: ${changes.join(", ")}`
+          });
         }
 
         if (result.trauma) {
-          this.chatLog.system(`  ⚠ Trauma: ${result.trauma}`);
+          await this.chatLog.streamMessage({
+            type: "system",
+            content: `  ⚠ Trauma: ${result.trauma}`
+          });
         }
       }
 
@@ -231,21 +241,21 @@ export class GamePlayScene extends Phaser.Scene {
       this.gameState.clearEvent(false);
 
       // Continue
-      this.chatLog.system("Continuing...");
+      await this.chatLog.streamMessage({ type: "system", content: "Continuing..." });
 
       this.time.delayedCall(3000, () => {
         this.startNextEvent();
       });
     } catch (error) {
-      this.chatLog.system(`Error: ${error}`);
+      await this.chatLog.streamMessage({ type: "system", content: `Error: ${error}` });
       this.chatInput.setEnabled(true);
     }
   }
 
-  private gameOver(): void {
+  private async gameOver(): Promise<void> {
     this.chatLog.addSeparator("GAME OVER");
-    this.chatLog.system("Your party has been defeated.");
-    this.chatLog.system(this.gameState.getStatsSummary());
+    await this.chatLog.streamMessage({ type: "system", content: "Your party has been defeated." });
+    await this.chatLog.streamMessage({ type: "system", content: this.gameState.getStatsSummary() });
 
     this.chatInput.setEnabled(false);
 

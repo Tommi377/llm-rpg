@@ -172,7 +172,7 @@ export class ChatInput {
         padding: 12px;
         margin-top: 8px;
         background: #00ff00;
-        color: #000;
+        color: #2f2f2f;
         border: none;
         font-family: inherit;
         font-size: 14px;

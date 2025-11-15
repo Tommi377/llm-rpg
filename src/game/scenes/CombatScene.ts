@@ -27,7 +27,7 @@ export class CombatScene extends Phaser.Scene {
     this.currentEvent = data.event;
   }
 
-  create(): void {
+  async create(): Promise<void> {
     this.gameState = GameState.getInstance();
     this.chatLog = new ChatLog();
     this.chatInput = new ChatInput();
@@ -41,19 +41,22 @@ export class CombatScene extends Phaser.Scene {
 
     // Display event description
     this.chatLog.addSeparator('COMBAT ENCOUNTER');
-    this.chatLog.combat(this.currentEvent.description);
+    await this.chatLog.streamMessage({ type: "combat", content: this.currentEvent.description });
 
     // Create enemies
     if (this.currentEvent.enemies) {
       this.enemies = EnemyFactory.createEnemies(this.currentEvent.enemies);
-      this.chatLog.system(`Enemies: ${this.enemies.map(e => e.name).join(', ')}`);
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: `Enemies: ${this.enemies.map(e => e.name).join(', ')}`
+      });
     }
 
     // Display combatants
     this.displayCombatants();
 
     // Get player doctrine
-    this.chatLog.system('Enter your combat doctrine:');
+    await this.chatLog.streamMessage({ type: "system", content: 'Enter your combat doctrine:' });
 
     this.chatInput.setEnabled(true);
     this.chatInput.focus();
@@ -103,8 +106,8 @@ export class CombatScene extends Phaser.Scene {
     this.chatInput.setEnabled(false);
     this.gameState.setDoctrine(doctrine);
 
-    this.chatLog.player(`Combat Doctrine: "${doctrine}"`);
-    this.chatLog.system('Combat begins!');
+    await this.chatLog.streamMessage({ type: "player", speaker: "You", content: `Combat Doctrine: "${doctrine}"` });
+    await this.chatLog.streamMessage({ type: "system", content: 'Combat begins!' });
 
     // Run combat with animations
     await this.runCombatWithAnimations();
@@ -121,7 +124,7 @@ export class CombatScene extends Phaser.Scene {
       this.enemies.some(e => e.isAlive())
     ) {
       turnCount++;
-      this.chatLog.system(`--- Turn ${turnCount} ---`);
+      await this.chatLog.streamMessage({ type: "system", content: `--- Turn ${turnCount} ---` });
 
       // Execute one turn
       await this.executeTurnWithAnimation();
@@ -141,13 +144,13 @@ export class CombatScene extends Phaser.Scene {
 
     if (victory) {
       this.gameState.clearEvent(true);
-      this.chatLog.system('Your party emerged victorious!');
-      this.chatLog.system('Returning to adventure...');
+      await this.chatLog.streamMessage({ type: "system", content: 'Your party emerged victorious!' });
+      await this.chatLog.streamMessage({ type: "system", content: 'Returning to adventure...' });
 
       await this.delay(3000);
       this.scene.start('GamePlayScene');
     } else {
-      this.chatLog.system('Your party has been defeated...');
+      await this.chatLog.streamMessage({ type: "system", content: 'Your party has been defeated...' });
       await this.delay(2000);
       this.gameOver();
     }
@@ -158,7 +161,7 @@ export class CombatScene extends Phaser.Scene {
     const aliveAgents = this.gameState.agents.filter(a => a.isAlive());
 
     for (const agent of aliveAgents) {
-      this.chatLog.system(`${agent.name} is thinking...`);
+      await this.chatLog.streamMessage({ type: "system", content: `${agent.name} is thinking...` });
 
       // Get agent's action (simplified for now)
       const enemyInfo = this.enemies
@@ -177,7 +180,10 @@ export class CombatScene extends Phaser.Scene {
       const damage = agent.attack + Math.floor(Math.random() * 5);
       const actualDamage = targetEnemy.takeDamage(damage);
 
-      this.chatLog.combat(`${agent.name} attacks ${targetEnemy.name} for ${actualDamage} damage!`);
+      await this.chatLog.streamMessage({
+        type: "combat",
+        content: `${agent.name} attacks ${targetEnemy.name} for ${actualDamage} damage!`
+      });
 
       // Animate
       const agentDisplay = this.agentDisplays.find(d => d.getX() > 0); // Find valid display
@@ -189,7 +195,10 @@ export class CombatScene extends Phaser.Scene {
       }
 
       if (!targetEnemy.isAlive()) {
-        this.chatLog.combat(`${targetEnemy.name} has been defeated!`);
+        await this.chatLog.streamMessage({
+          type: "combat",
+          content: `${targetEnemy.name} has been defeated!`
+        });
       }
 
       this.agentDisplays.forEach(d => d.update());
@@ -213,7 +222,10 @@ export class CombatScene extends Phaser.Scene {
       const damage = enemy.attack + Math.floor(Math.random() * 5);
       const actualDamage = targetAgent.takeDamage(damage);
 
-      this.chatLog.combat(`${enemy.name} attacks ${targetAgent.name} for ${actualDamage} damage!`);
+      await this.chatLog.streamMessage({
+        type: "combat",
+        content: `${enemy.name} attacks ${targetAgent.name} for ${actualDamage} damage!`
+      });
 
       // Animate
       const enemyDisplay = this.enemyDisplays.find(d => d.getX() > 0);
@@ -225,7 +237,10 @@ export class CombatScene extends Phaser.Scene {
       }
 
       if (!targetAgent.isAlive()) {
-        this.chatLog.combat(`${targetAgent.name} has fallen!`);
+        await this.chatLog.streamMessage({
+          type: "combat",
+          content: `${targetAgent.name} has fallen!`
+        });
       }
 
       this.agentDisplays.forEach(d => d.update());

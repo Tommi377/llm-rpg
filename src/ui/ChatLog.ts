@@ -4,7 +4,7 @@
  */
 
 export interface ChatMessage {
-  type: 'system' | 'agent' | 'player' | 'combat';
+  type: "system" | "agent" | "player" | "combat";
   speaker?: string;
   content: string;
   timestamp?: number;
@@ -18,18 +18,20 @@ export class ChatLog {
   private messages: ChatMessage[];
   private autoScroll: boolean;
 
-  constructor(containerId: string = 'chat-log') {
+  constructor(containerId: string = "chat-log") {
     const element = document.getElementById(containerId);
     if (!element) {
       throw new Error(`Chat log container '${containerId}' not found`);
     }
 
-    const thinkingArea = document.getElementById('thinking-area');
+    const thinkingArea = document.getElementById("thinking-area");
     if (!thinkingArea) {
       throw new Error(`Thinking area not found`);
     }
 
-    const thinkingAgentSpan = thinkingArea.querySelector('.thinking-agent') as HTMLElement;
+    const thinkingAgentSpan = thinkingArea.querySelector(
+      ".thinking-agent",
+    ) as HTMLElement;
     if (!thinkingAgentSpan) {
       throw new Error(`Thinking agent span not found`);
     }
@@ -59,7 +61,7 @@ export class ChatLog {
    */
   system(content: string): void {
     this.addMessage({
-      type: 'system',
+      type: "system",
       content,
     });
   }
@@ -69,7 +71,7 @@ export class ChatLog {
    */
   agent(speaker: string, content: string, color?: number): void {
     this.addMessage({
-      type: 'agent',
+      type: "agent",
       speaker,
       content,
       color,
@@ -81,8 +83,8 @@ export class ChatLog {
    */
   player(content: string): void {
     this.addMessage({
-      type: 'player',
-      speaker: 'You',
+      type: "player",
+      speaker: "You",
       content,
     });
   }
@@ -92,7 +94,7 @@ export class ChatLog {
    */
   combat(content: string): void {
     this.addMessage({
-      type: 'combat',
+      type: "combat",
       content,
     });
   }
@@ -102,41 +104,41 @@ export class ChatLog {
    */
   thinking(agent?: string, color?: number): void {
     // Set agent name
-    this.thinkingAgentSpan.textContent = agent || 'Game Master';
+    this.thinkingAgentSpan.textContent = agent || "Game Master";
 
     // Set color if provided
     if (color !== undefined) {
-      const hexColor = '#' + color.toString(16).padStart(6, '0');
+      const hexColor = "#" + color.toString(16).padStart(6, "0");
       this.thinkingAgentSpan.style.color = hexColor;
     } else {
-      this.thinkingAgentSpan.style.color = '#fff';
+      this.thinkingAgentSpan.style.color = "#fff";
     }
 
     // Show thinking area
-    this.thinkingArea.classList.remove('hidden');
+    this.thinkingArea.classList.remove("hidden");
   }
 
   /**
    * Hide thinking indicator
    */
   removeThinking(): void {
-    this.thinkingArea.classList.add('hidden');
+    this.thinkingArea.classList.add("hidden");
   }
 
   /**
    * Render a single message
    */
   private renderMessage(message: ChatMessage): void {
-    const messageDiv = document.createElement('div');
+    const messageDiv = document.createElement("div");
     messageDiv.className = `chat-message ${message.type}`;
 
     // If agent message with color, override background
-    if (message.type === 'agent' && message.color !== undefined) {
-      const hexColor = '#' + message.color.toString(16).padStart(6, '0');
+    if (message.type === "agent" && message.color !== undefined) {
+      const hexColor = "#" + message.color.toString(16).padStart(6, "0");
       messageDiv.style.backgroundColor = hexColor;
     }
 
-    let html = '';
+    let html = "";
 
     if (message.speaker) {
       html += `<div class="chat-speaker">${message.speaker}</div>`;
@@ -153,7 +155,7 @@ export class ChatLog {
    */
   clear(): void {
     this.messages = [];
-    this.container.innerHTML = '';
+    this.container.innerHTML = "";
   }
 
   /**
@@ -167,7 +169,7 @@ export class ChatLog {
    * Escape HTML to prevent XSS
    */
   private escapeHtml(text: string): string {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
   }
@@ -177,11 +179,11 @@ export class ChatLog {
    */
   exportHistory(): string {
     return this.messages
-      .map(m => {
-        const speaker = m.speaker ? `${m.speaker}: ` : '';
+      .map((m) => {
+        const speaker = m.speaker ? `${m.speaker}: ` : "";
         return `[${m.type.toUpperCase()}] ${speaker}${m.content}`;
       })
-      .join('\n');
+      .join("\n");
   }
 
   /**
@@ -202,13 +204,39 @@ export class ChatLog {
   }
 
   /**
+   * Stream a single message with thinking indicator and delay
+   * Shows thinking indicator, displays message, then removes indicator
+   */
+  async streamMessage(
+    message: ChatMessage,
+    thinkingAgent?: string,
+    thinkingColor?: number,
+  ): Promise<void> {
+    // Show thinking indicator
+    this.thinking(thinkingAgent, thinkingColor);
+
+    // Small delay before showing message
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // Display message
+    this.addMessage(message);
+
+    // Wait based on message length
+    const delay = this.calculateDelay(message.content);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+
+    // Remove thinking indicator
+    this.removeThinking();
+  }
+
+  /**
    * Stream messages one by one with delays
    * Shows thinking indicator until all messages are displayed
    */
   async streamMessages(
     messages: ChatMessage[],
     thinkingAgent?: string,
-    thinkingColor?: number
+    thinkingColor?: number,
   ): Promise<void> {
     if (messages.length === 0) return;
 
@@ -223,7 +251,7 @@ export class ChatLog {
       if (i > 0) {
         const previousMessage = messages[i - 1];
         const delay = this.calculateDelay(previousMessage.content);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
 
       this.addMessage(message);
@@ -231,7 +259,9 @@ export class ChatLog {
 
     // Wait a bit after last message
     const lastMessage = messages[messages.length - 1];
-    await new Promise(resolve => setTimeout(resolve, this.calculateDelay(lastMessage.content) * 0.5));
+    await new Promise((resolve) =>
+      setTimeout(resolve, this.calculateDelay(lastMessage.content) * 0.5),
+    );
 
     // Remove thinking indicator
     this.removeThinking();
@@ -244,7 +274,7 @@ export class ChatLog {
     const oldAutoScroll = this.autoScroll;
     this.autoScroll = false;
 
-    messages.forEach(msg => this.addMessage(msg));
+    messages.forEach((msg) => this.addMessage(msg));
 
     this.autoScroll = oldAutoScroll;
     if (this.autoScroll) {
@@ -256,8 +286,8 @@ export class ChatLog {
    * Add a separator line
    */
   addSeparator(text?: string): void {
-    const separator = document.createElement('div');
-    separator.className = 'chat-separator';
+    const separator = document.createElement("div");
+    separator.className = "chat-separator";
     separator.style.cssText = `
       margin: 16px 0;
       padding: 8px;
@@ -267,7 +297,7 @@ export class ChatLog {
       font-style: italic;
       color: #888;
     `;
-    separator.textContent = text || '---';
+    separator.textContent = text || "---";
     this.container.appendChild(separator);
     this.scrollToBottom();
   }

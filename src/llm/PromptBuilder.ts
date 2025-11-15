@@ -123,7 +123,7 @@ Respond with JSON:
    */
   static eventGeneration(
     party: Agent[],
-    eventType: "normal" | "combat",
+    _eventType: "normal" | "combat",
     template: string,
     previousEvents: string[],
   ): string {
@@ -179,8 +179,8 @@ Evaluate each agent's response based on:
 4. Risk management
 
 For each agent, assign an outcome: "good", "neutral", or "bad"
-Good outcomes grant stat bonuses (+1 to HP or MIND)
-Bad outcomes may cause HP loss or trauma
+Good outcomes grant stat bonuses (+1 to HP or MIND). Limit the changes from -5 to +5 per stat. Assume that 5 is half of an units HP.
+Bad outcomes may cause HP loss, MIND loss or trauma
 
 Respond with JSON:
 {

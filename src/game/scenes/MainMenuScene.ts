@@ -19,7 +19,7 @@ export class MainMenuScene extends Phaser.Scene {
     super({ key: "MainMenuScene" });
   }
 
-  create(): void {
+  async create(): Promise<void> {
     this.gameState = GameState.getInstance();
     this.gameState.reset();
 
@@ -28,16 +28,24 @@ export class MainMenuScene extends Phaser.Scene {
     this.chatLog.clear();
 
     // Welcome message
-    this.chatLog.system("Welcome to LLM Squad RPG!");
-    this.chatLog.system(
-      "In this game, your squad of agents acts autonomously based on AI reasoning.",
-    );
-    this.chatLog.system(
-      'You guide them with a "doctrine" - strategic instructions they follow.',
-    );
-    this.chatLog.system(
-      "First, let's check your Ollama connection and create your party...",
-    );
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: "Welcome to LLM Squad RPG!",
+    });
+    await this.chatLog.streamMessage({
+      type: "system",
+      content:
+        "In this game, your squad of agents acts autonomously based on AI reasoning.",
+    });
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: "You can guide them with strategic instructions.",
+    });
+    await this.chatLog.streamMessage({
+      type: "system",
+      content:
+        "First, let's check your Ollama connection and create your party...",
+    });
 
     // Draw title
     const title = this.add.text(
@@ -74,33 +82,63 @@ export class MainMenuScene extends Phaser.Scene {
   private async initializeGame(): Promise<void> {
     try {
       // Check Ollama connection
-      this.chatLog.system("Checking Ollama connection...");
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: "Checking Ollama connection...",
+      });
 
       const isConnected = await ollama.checkConnection();
 
       if (!isConnected) {
-        this.chatLog.system("ERROR: Could not connect to Ollama!");
-        this.chatLog.system("Please make sure Ollama is running:");
-        this.chatLog.system("1. Install Ollama from https://ollama.ai");
-        this.chatLog.system("2. Run: ollama run llama3.2");
-        this.chatLog.system("3. Keep it running and refresh this page");
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "ERROR: Could not connect to Ollama!",
+        });
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "Please make sure Ollama is running:",
+        });
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "1. Install Ollama from https://ollama.ai",
+        });
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "2. Run: ollama run llama3.2",
+        });
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "3. Keep it running and refresh this page",
+        });
         return;
       }
 
-      this.chatLog.system("✓ Connected to Ollama");
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: "✓ Connected to Ollama",
+      });
 
       // List available models
       const models = await ollama.listModels();
       if (models.length > 0) {
-        this.chatLog.system(`Available models: ${models.join(", ")}`);
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: `Available models: ${models.join(", ")}`,
+        });
       }
 
-      this.chatLog.system("Creating your party of 3 agents...");
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: "Creating your party of 3 agents...",
+      });
 
       // Create input forms for agent names
       this.showAgentNameInput();
     } catch (error) {
-      this.chatLog.system(`Error: ${error}`);
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: `Error: ${error}`,
+      });
     }
   }
 
@@ -189,7 +227,10 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private async createParty(): Promise<void> {
-    this.chatLog.system("Generating agent personalities...");
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: "Generating agent personalities...",
+    });
 
     const agents: Agent[] = [];
 
@@ -197,7 +238,10 @@ export class MainMenuScene extends Phaser.Scene {
       const name = this.agentNames[i];
       const color = this.agentColors[i];
 
-      this.chatLog.system(`Creating ${name}...`);
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: `Creating ${name}...`,
+      });
 
       try {
         // Create agent
@@ -239,22 +283,32 @@ export class MainMenuScene extends Phaser.Scene {
 
         agents.push(agent);
       } catch (error) {
-        this.chatLog.system(`Error creating ${name}: ${error}`);
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: `Error creating ${name}: ${error}`,
+        });
       }
     }
 
     if (agents.length === 0) {
-      this.chatLog.system(
-        "Failed to create party. Please refresh and try again.",
-      );
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: "Failed to create party. Please refresh and try again.",
+      });
       return;
     }
 
     // Set game state
     this.gameState.setAgents(agents);
 
-    this.chatLog.system("Party created successfully!");
-    this.chatLog.system("Your adventure begins...");
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: "Party created successfully!",
+    });
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: "Your adventure begins...",
+    });
 
     // Transition to gameplay
     this.time.delayedCall(2000, () => {
