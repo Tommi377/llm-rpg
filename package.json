@@ -1,0 +1,19 @@
+{
+  "name": "rpg-llm2",
+  "version": "1.0.0",
+  "description": "LLM-powered autonomous squad RPG with Phaser and TypeScript",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10"
+  }
+}
