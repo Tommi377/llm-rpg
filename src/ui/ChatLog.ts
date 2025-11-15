@@ -8,6 +8,7 @@ export interface ChatMessage {
   speaker?: string;
   content: string;
   timestamp?: number;
+  color?: number; // Agent color in hex format
 }
 
 export class ChatLog {
@@ -52,11 +53,12 @@ export class ChatLog {
   /**
    * Add an agent message (thought/action)
    */
-  agent(speaker: string, content: string): void {
+  agent(speaker: string, content: string, color?: number): void {
     this.addMessage({
       type: 'agent',
       speaker,
       content,
+      color,
     });
   }
 
@@ -84,9 +86,16 @@ export class ChatLog {
   /**
    * Add a thinking indicator
    */
-  thinking(agent?: string): HTMLElement {
+  thinking(agent?: string, color?: number): HTMLElement {
     const thinkingDiv = document.createElement('div');
     thinkingDiv.className = 'chat-message agent thinking';
+
+    // If color provided, set background color
+    if (color !== undefined) {
+      const hexColor = '#' + color.toString(16).padStart(6, '0');
+      thinkingDiv.style.backgroundColor = hexColor;
+    }
+
     thinkingDiv.innerHTML = `
       <div class="chat-speaker">${agent || 'AI'}</div>
       <div class="chat-content">Thinking...</div>
@@ -109,6 +118,12 @@ export class ChatLog {
   private renderMessage(message: ChatMessage): void {
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${message.type}`;
+
+    // If agent message with color, override background
+    if (message.type === 'agent' && message.color !== undefined) {
+      const hexColor = '#' + message.color.toString(16).padStart(6, '0');
+      messageDiv.style.backgroundColor = hexColor;
+    }
 
     let html = '';
 

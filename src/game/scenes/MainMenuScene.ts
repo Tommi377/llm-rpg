@@ -13,7 +13,7 @@ export class MainMenuScene extends Phaser.Scene {
   private chatLog!: ChatLog;
   private gameState!: GameState;
   private agentNames: string[] = [];
-  private agentColors: number[] = [0x00ff00, 0x0088ff, 0xff00ff];
+  private agentColors: number[] = [0x2d6a2d, 0x2d4a6a, 0x6a2d6a]; // Dark green, dark blue, dark purple
 
   constructor() {
     super({ key: 'MainMenuScene' });
@@ -190,7 +190,7 @@ export class MainMenuScene extends Phaser.Scene {
 
       this.chatLog.system(`Creating ${name}...`);
 
-      const thinking = this.chatLog.thinking(name);
+      const thinking = this.chatLog.thinking(name, color);
 
       try {
         // Create agent
@@ -202,9 +202,9 @@ export class MainMenuScene extends Phaser.Scene {
 
         this.chatLog.removeThinking(thinking);
 
-        this.chatLog.agent(name, `Personality: ${personality.personality}`);
-        this.chatLog.agent(name, `Flaw: ${personality.flaw}`);
-        this.chatLog.agent(name, `Signature Skill: ${personality.signatureSkill}`);
+        this.chatLog.agent(name, `Personality: ${personality.personality}`, color);
+        this.chatLog.agent(name, `Flaw: ${personality.flaw}`, color);
+        this.chatLog.agent(name, `Signature Skill: ${personality.signatureSkill}`, color);
         this.chatLog.system(`Stats: HP ${agent.maxHp} | ATT ${agent.attack} | MIND ${agent.mind}`);
         this.chatLog.system('');
 

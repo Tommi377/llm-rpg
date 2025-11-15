@@ -156,8 +156,8 @@ export class GamePlayScene extends Phaser.Scene {
         const decision = decisions.get(agent.name);
         if (!decision) continue;
 
-        this.chatLog.agent(agent.name, decision.action);
-        this.chatLog.agent(agent.name, `💭 "${decision.reasoning}"`);
+        this.chatLog.agent(agent.name, decision.action, agent.color);
+        this.chatLog.agent(agent.name, `💭 "${decision.reasoning}"`, agent.color);
       }
 
       // Judge outcomes
