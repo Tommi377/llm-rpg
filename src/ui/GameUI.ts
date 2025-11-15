@@ -90,6 +90,10 @@ export class AgentDisplay {
   private hpBar: HPBar;
   private mindBar: HPBar;
   private container: Phaser.GameObjects.Container;
+  private selectionBox: Phaser.GameObjects.Rectangle;
+  private detailsBox!: Phaser.GameObjects.Container;
+  private detailsBackground!: Phaser.GameObjects.Rectangle;
+  private detailsTexts!: Phaser.GameObjects.Text[];
 
   constructor(scene: Phaser.Scene, agent: Agent, x: number, y: number) {
     this.scene = scene;
@@ -115,7 +119,154 @@ export class AgentDisplay {
 
     this.container = scene.add.container(x, y, [this.sprite, this.nameText]);
 
+    // Create selection box (hidden by default)
+    this.selectionBox = scene.add.rectangle(0, 0, 110, 110, 0x00ff00, 0);
+    this.selectionBox.setStrokeStyle(3, 0xffff00);
+    this.selectionBox.setVisible(false);
+    this.container.add(this.selectionBox);
+
+    // Create details box (hidden by default)
+    this.createDetailsBox();
+
+    // Make container interactive
+    this.setupHoverInteraction();
+
     this.update();
+  }
+
+  private createDetailsBox(): void {
+    const boxWidth = 500;
+    const boxHeight = 280;
+    const boxX = 0;
+    const boxY = 230; // Position to fill bottom half
+
+    // Background
+    this.detailsBackground = this.scene.add.rectangle(
+      boxX,
+      boxY,
+      boxWidth,
+      boxHeight,
+      0x1a1a1a,
+      0.95,
+    );
+    this.detailsBackground.setStrokeStyle(3, 0xffff00);
+
+    // Text content
+    this.detailsTexts = [];
+
+    const titleConfig = {
+      fontSize: "14px",
+      color: "#ffff00",
+      fontStyle: "bold",
+      align: "center",
+    };
+
+    const textConfig = {
+      fontSize: "11px",
+      color: "#ffffff",
+      wordWrap: { width: boxWidth - 20 },
+      align: "left",
+      lineSpacing: 4,
+    };
+
+    // Title
+    const titleText = this.scene.add.text(
+      boxX,
+      boxY - boxHeight / 2 + 15,
+      "AGENT DETAILS",
+      titleConfig,
+    );
+    titleText.setOrigin(0.5, 0);
+
+    // Personality section
+    const personalityLabel = this.scene.add.text(
+      boxX - boxWidth / 2 + 10,
+      boxY - boxHeight / 2 + 45,
+      "PERSONALITY:",
+      { ...textConfig, color: "#00ffff", fontStyle: "bold" },
+    );
+    personalityLabel.setOrigin(0, 0);
+
+    const personalityText = this.scene.add.text(
+      boxX - boxWidth / 2 + 10,
+      boxY - boxHeight / 2 + 65,
+      this.agent.personality,
+      textConfig,
+    );
+    personalityText.setOrigin(0, 0);
+
+    // Flaw section
+    const flawLabel = this.scene.add.text(
+      boxX - boxWidth / 2 + 10,
+      boxY - boxHeight / 2 + 125,
+      "FLAW:",
+      { ...textConfig, color: "#ff6666", fontStyle: "bold" },
+    );
+    flawLabel.setOrigin(0, 0);
+
+    const flawText = this.scene.add.text(
+      boxX - boxWidth / 2 + 10,
+      boxY - boxHeight / 2 + 145,
+      this.agent.flaw,
+      textConfig,
+    );
+    flawText.setOrigin(0, 0);
+
+    // Signature Skill section
+    const skillLabel = this.scene.add.text(
+      boxX - boxWidth / 2 + 10,
+      boxY - boxHeight / 2 + 205,
+      "SIGNATURE SKILL:",
+      { ...textConfig, color: "#00ff00", fontStyle: "bold" },
+    );
+    skillLabel.setOrigin(0, 0);
+
+    const skillText = this.scene.add.text(
+      boxX - boxWidth / 2 + 10,
+      boxY - boxHeight / 2 + 225,
+      this.agent.signatureSkill,
+      textConfig,
+    );
+    skillText.setOrigin(0, 0);
+
+    this.detailsTexts.push(
+      titleText,
+      personalityLabel,
+      personalityText,
+      flawLabel,
+      flawText,
+      skillLabel,
+      skillText,
+    );
+
+    // Create container for details
+    this.detailsBox = this.scene.add.container(0, 0, [
+      this.detailsBackground,
+      ...this.detailsTexts,
+    ]);
+    this.detailsBox.setVisible(false);
+  }
+
+  private setupHoverInteraction(): void {
+    // Make the container interactive
+    this.container.setSize(120, 120);
+    this.container.setInteractive(
+      new Phaser.Geom.Rectangle(-60, -60, 120, 120),
+      Phaser.Geom.Rectangle.Contains,
+    );
+
+    // Set cursor to pointer on hover
+    this.container.on("pointerover", () => {
+      this.scene.input.setDefaultCursor("pointer");
+      this.selectionBox.setVisible(true);
+      this.detailsBox.setVisible(true);
+    });
+
+    this.container.on("pointerout", () => {
+      this.scene.input.setDefaultCursor("default");
+      this.selectionBox.setVisible(false);
+      this.detailsBox.setVisible(false);
+    });
   }
 
   update(): void {
@@ -124,6 +275,9 @@ export class AgentDisplay {
 
     this.mindBar.update(this.agent.mind, this.agent.maxMind);
     this.mindBar.setPosition(this.container.x - 40, this.container.y + 75);
+
+    // Position details box relative to container
+    this.detailsBox.setPosition(this.container.x, this.container.y);
 
     if (!this.agent.isAlive()) {
       this.sprite.setTint(0x666666);
@@ -161,6 +315,7 @@ export class AgentDisplay {
   }
 
   destroy(): void {
+    this.detailsBox.destroy();
     this.container.destroy();
     this.hpBar.destroy();
     this.mindBar.destroy();
