@@ -183,8 +183,9 @@ export class MainMenuScene extends Phaser.Scene {
     const updatePosition = () => {
       requestAnimationFrame(() => {
         const canvasRect = canvas.getBoundingClientRect();
+        const scaleY = canvasRect.height / this.cameras.main.height;
         apiKeyContainer.style.left = `${canvasRect.left + canvasRect.width / 2 - 150}px`;
-        apiKeyContainer.style.top = `${canvasRect.top + currentY + 120}px`;
+        apiKeyContainer.style.top = `${canvasRect.top + (currentY + 40) * scaleY}px`;
       });
     };
 
@@ -316,8 +317,9 @@ export class MainMenuScene extends Phaser.Scene {
     const updatePosition = () => {
       requestAnimationFrame(() => {
         const canvasRect = canvas.getBoundingClientRect();
+        const scaleY = canvasRect.height / this.cameras.main.height;
         apiKeyContainer.style.left = `${canvasRect.left + canvasRect.width / 2 - 150}px`;
-        apiKeyContainer.style.top = `${canvasRect.top + currentY + 90}px`;
+        apiKeyContainer.style.top = `${canvasRect.top + (currentY + 40) * scaleY}px`;
       });
     };
 
@@ -507,8 +509,9 @@ export class MainMenuScene extends Phaser.Scene {
       const updatePosition = () => {
         requestAnimationFrame(() => {
           const canvasRect = canvas.getBoundingClientRect();
+          const scaleY = canvasRect.height / this.cameras.main.height;
           inputContainer.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
-          inputContainer.style.top = `${canvasRect.top + currentY + i * 60 + 100}px`;
+          inputContainer.style.top = `${canvasRect.top + (currentY + i * 60) * scaleY}px`;
         });
       };
 
