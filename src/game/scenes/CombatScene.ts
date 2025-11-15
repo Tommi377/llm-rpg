@@ -68,8 +68,8 @@ export class CombatScene extends Phaser.Scene {
 
   private displayCombatants(): void {
     // Display agents on the left
-    const agentStartX = 150;
-    const agentY = 250;
+    const agentStartX = 200;
+    const agentY = 200;
 
     this.agentDisplays = [];
 
@@ -79,15 +79,15 @@ export class CombatScene extends Phaser.Scene {
           this,
           agent,
           agentStartX,
-          agentY + index * 100
+          agentY + index * 130
         );
         this.agentDisplays.push(display);
       }
     });
 
     // Display enemies on the right
-    const enemyStartX = this.cameras.main.width - 150;
-    const enemyY = 250;
+    const enemyStartX = this.cameras.main.width - 200;
+    const enemyY = 200;
 
     this.enemyDisplays = [];
 
@@ -96,7 +96,7 @@ export class CombatScene extends Phaser.Scene {
         this,
         enemy,
         enemyStartX,
-        enemyY + index * 100
+        enemyY + index * 130
       );
       this.enemyDisplays.push(display);
     });

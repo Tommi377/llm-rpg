@@ -62,8 +62,8 @@ export class GamePlayScene extends Phaser.Scene {
   }
 
   private displayAgents(): void {
-    const startX = 150;
-    const spacing = 100;
+    const startX = 250;
+    const spacing = 150;
     const y = 200;
 
     this.agentDisplays = [];
