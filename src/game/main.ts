@@ -39,7 +39,7 @@ const config: Phaser.Types.Core.GameConfig = {
 const game = new Phaser.Game(config);
 
 // Log initialization
-console.log("LLM Squad RPG initialized");
+console.log("captAIn initialized");
 console.log("Make sure Ollama is running with: ollama run llama3");
 
 // Export for debugging

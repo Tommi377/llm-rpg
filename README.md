@@ -15,7 +15,7 @@ An autonomous AI-powered RPG where your squad of agents acts independently based
 
 1. **Node.js** (v18 or higher)
 2. **Ollama** - Local LLM runtime
-   - Install from: https://ollama.ai
+   - Install from: <https://ollama.ai>
    - Download and run a model: `ollama run llama3`
    - Keep Ollama running in the background while playing
 
@@ -34,14 +34,17 @@ The game will open in your browser at `http://localhost:3000`
 ## How to Play
 
 ### 1. Party Setup
+
 - Name your 3 agents
 - The LLM will generate unique personalities, flaws, and skills for each agent
 - Each agent has stats: HP (health), ATT (attack), and MIND (mental/magic power)
 
 ### 2. Game Loop
+
 The game presents a series of events:
 
 **Normal Events**:
+
 - Narrative scenarios where agents must make decisions
 - Enter your "doctrine" - strategic guidance for your agents
 - Agents autonomously decide how to respond based on:
@@ -52,12 +55,14 @@ The game presents a series of events:
 - A judge LLM rates their performance and assigns rewards/penalties
 
 **Combat Events**:
+
 - Turn-based battles against enemies
 - Enter your combat doctrine
 - Agents autonomously choose actions: attack, defend, heal, or use their signature skill
 - Combat continues until one side is defeated
 
 ### 3. Progression
+
 - Good decisions grant stat increases
 - Bad decisions may cause HP loss or trauma
 - Trauma affects future decision-making
@@ -66,12 +71,14 @@ The game presents a series of events:
 ## Doctrine Examples
 
 **Normal Events**:
+
 - "Prioritize survival over glory"
 - "Protect the healer at all costs"
 - "Take calculated risks for greater rewards"
 - "Be diplomatic and avoid unnecessary conflict"
 
 **Combat**:
+
 - "Focus fire on one enemy at a time"
 - "Heal when anyone drops below 30% HP"
 - "Use defensive tactics and wear them down"
@@ -117,20 +124,25 @@ src/
 ## Customization
 
 ### Change LLM Model
+
 Edit `src/llm/OllamaClient.ts`:
+
 ```typescript
-this.model = 'llama3'; // Change to 'mistral', 'codellama', etc.
+this.model = "llama3"; // Change to 'mistral', 'codellama', etc.
 ```
 
 ### Add More Events
+
 Edit `src/events/EventTemplates.ts` to add new event templates.
 
 ### Adjust Difficulty
+
 - Modify agent starting stats in `Agent.ts`
 - Adjust enemy HP/ATT in `Enemy.ts`
 - Change event difficulty weighting in `EventTemplates.ts`
 
 ### Customize UI
+
 - Modify colors and styles in `index.html`
 - Adjust sprite sizes in `GameUI.ts`
 - Change layouts in scene files
@@ -138,15 +150,18 @@ Edit `src/events/EventTemplates.ts` to add new event templates.
 ## Troubleshooting
 
 **"Could not connect to Ollama"**:
+
 - Make sure Ollama is installed and running
 - Run `ollama run llama3` in a terminal
 - Check that Ollama is accessible at `http://localhost:11434`
 
 **LLM responses are slow**:
+
 - Use a smaller/faster model: `ollama run llama3:8b`
 - Adjust temperature in `OllamaClient.ts`
 
 **Invalid JSON errors**:
+
 - The LLM sometimes produces invalid JSON
 - The game includes retry logic and fallbacks
 - Consider using a more capable model
@@ -182,6 +197,7 @@ MIT
 ## Credits
 
 Built with Claude Code following the "ChatGPT game jam spec" design philosophy:
+
 - LLM-powered autonomous agents
 - Player guides via chat prompts
 - Event-driven narrative gameplay

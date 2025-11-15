@@ -30,7 +30,7 @@ export class MainMenuScene extends Phaser.Scene {
     // Welcome message
     await this.chatLog.streamMessage({
       type: "system",
-      content: "Welcome to LLM Squad RPG!",
+      content: "Welcome to captAIn!",
     });
     await this.chatLog.streamMessage({
       type: "system",
@@ -48,16 +48,11 @@ export class MainMenuScene extends Phaser.Scene {
     });
 
     // Draw title
-    const title = this.add.text(
-      this.cameras.main.centerX,
-      100,
-      "LLM SQUAD RPG",
-      {
-        fontSize: "48px",
-        color: "#00ff00",
-        fontFamily: "Courier New",
-      },
-    );
+    const title = this.add.text(this.cameras.main.centerX, 100, "captAIn", {
+      fontSize: "48px",
+      color: "#00ff00",
+      fontFamily: "Courier New",
+    });
     title.setOrigin(0.5);
 
     // Subtitle

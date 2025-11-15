@@ -62,7 +62,7 @@ export class EventGenerator {
         challenge: response.challenge,
       };
 
-      this.eventHistory.push(`Event: ${response.description}`);
+      //this.eventHistory.push(`Event: ${response.description}`);
       return event;
     } catch (error) {
       console.error("Failed to generate event:", error);
@@ -80,6 +80,10 @@ export class EventGenerator {
    */
   getHistory(): string[] {
     return [...this.eventHistory];
+  }
+
+  addSummary(summary: string): void {
+    this.eventHistory.push(summary);
   }
 
   /**
