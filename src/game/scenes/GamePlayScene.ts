@@ -29,14 +29,11 @@ export class GamePlayScene extends Phaser.Scene {
 
     // Show game container
     const gameContainer = document.getElementById('game-container');
-    const loading = document.getElementById('loading');
     if (gameContainer) gameContainer.classList.remove('hidden');
-    if (loading) loading.classList.add('hidden');
 
     // Title
     this.add.text(this.cameras.main.centerX, 40, 'THE ADVENTURE', {
       fontSize: '32px',
-      color: '#00ff00',
       fontFamily: 'Courier New',
     }).setOrigin(0.5);
 
@@ -46,7 +43,6 @@ export class GamePlayScene extends Phaser.Scene {
     // Welcome
     this.chatLog.addSeparator('NEW ADVENTURE');
     this.chatLog.system('Your party embarks on their journey...');
-    this.chatLog.system('');
 
     // Set up input
     this.chatInput.addSubmitButton();
@@ -90,7 +86,7 @@ export class GamePlayScene extends Phaser.Scene {
     this.chatLog.addSeparator(`EVENT ${this.gameState.eventCount}`);
     this.chatLog.system('Generating event...');
 
-    const thinking = this.chatLog.thinking();
+    this.chatLog.thinking();
 
     try {
       // Generate event
@@ -99,7 +95,7 @@ export class GamePlayScene extends Phaser.Scene {
         this.gameState.eventCount
       );
 
-      this.chatLog.removeThinking(thinking);
+      this.chatLog.removeThinking();
 
       if (this.currentEvent.type === 'combat') {
         // Switch to combat scene
@@ -109,7 +105,7 @@ export class GamePlayScene extends Phaser.Scene {
         await this.handleNormalEvent(this.currentEvent);
       }
     } catch (error) {
-      this.chatLog.removeThinking(thinking);
+      this.chatLog.removeThinking();
       this.chatLog.system(`Error generating event: ${error}`);
       this.time.delayedCall(2000, () => this.startNextEvent());
     }
@@ -120,7 +116,6 @@ export class GamePlayScene extends Phaser.Scene {
     if (event.challenge) {
       this.chatLog.system(`Challenge: ${event.challenge}`);
     }
-    this.chatLog.system('');
     this.chatLog.system('How will your agents respond? Enter your doctrine below.');
 
     // Enable input
@@ -136,7 +131,6 @@ export class GamePlayScene extends Phaser.Scene {
     this.gameState.setDoctrine(doctrine);
 
     this.chatLog.player(`Doctrine: "${doctrine}"`);
-    this.chatLog.system('');
     this.chatLog.system('Agents are deciding their actions...');
 
     if (!this.currentEvent) return;
@@ -150,21 +144,31 @@ export class GamePlayScene extends Phaser.Scene {
         this.gameState.eventGenerator.getHistory().slice(-3)
       );
 
-      // Display decisions
-      this.chatLog.system('');
+      // Stream each agent's decision one at a time
       for (const agent of this.gameState.agents) {
         const decision = decisions.get(agent.name);
         if (!decision) continue;
 
-        this.chatLog.agent(agent.name, decision.action, agent.color);
-        this.chatLog.agent(agent.name, `💭 "${decision.reasoning}"`, agent.color);
+        await this.chatLog.streamMessages([
+          {
+            type: 'agent',
+            speaker: agent.name,
+            content: decision.action,
+            color: agent.color,
+          },
+          {
+            type: 'agent',
+            speaker: agent.name,
+            content: `💭 "${decision.reasoning}"`,
+            color: agent.color,
+          },
+        ], agent.name, agent.color);
       }
 
       // Judge outcomes
-      this.chatLog.system('');
       this.chatLog.system('Judging outcomes...');
 
-      const thinking = this.chatLog.thinking();
+      this.chatLog.thinking();
 
       const agentActions = Array.from(decisions.entries()).map(([name, decision]) => ({
         name,
@@ -178,12 +182,10 @@ export class GamePlayScene extends Phaser.Scene {
         doctrine
       );
 
-      this.chatLog.removeThinking(thinking);
+      this.chatLog.removeThinking();
 
       // Display results
-      this.chatLog.system('');
       this.chatLog.system(judgement.summary);
-      this.chatLog.system('');
 
       // Apply results
       EventJudge.applyResults(this.gameState.agents, judgement.results);
@@ -215,7 +217,6 @@ export class GamePlayScene extends Phaser.Scene {
       this.gameState.clearEvent(false);
 
       // Continue
-      this.chatLog.system('');
       this.chatLog.system('Continuing...');
 
       this.time.delayedCall(3000, () => {
@@ -230,7 +231,6 @@ export class GamePlayScene extends Phaser.Scene {
   private gameOver(): void {
     this.chatLog.addSeparator('GAME OVER');
     this.chatLog.system('Your party has been defeated.');
-    this.chatLog.system('');
     this.chatLog.system(this.gameState.getStatsSummary());
 
     this.chatInput.setEnabled(false);

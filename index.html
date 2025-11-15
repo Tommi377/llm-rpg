@@ -30,6 +30,7 @@
       justify-content: center;
       align-items: center;
       background: #000;
+      width: 800px;
     }
 
     #chat-panel {
@@ -101,16 +102,43 @@
       margin-bottom: 4px;
     }
 
-    #loading {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #000;
-      padding: 20px;
-      border: 2px solid #00ff00;
-      border-radius: 4px;
-      z-index: 1000;
+    #thinking-area {
+      min-height: 40px;
+      max-height: 80px;
+      padding: 12px 16px;
+      border-top: 2px solid #444;
+      border-bottom: 2px solid #444;
+      background: #1a1a1a;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      color: #888;
+      font-style: italic;
+    }
+
+    #thinking-area.hidden {
+      display: none;
+    }
+
+    #thinking-area .thinking-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #thinking-area .thinking-agent {
+      font-weight: bold;
+      color: #fff;
+    }
+
+    #thinking-area .thinking-dots::after {
+      content: '...';
+      animation: thinking-pulse 1.5s infinite;
+    }
+
+    @keyframes thinking-pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
     }
 
     .hidden {
@@ -119,14 +147,17 @@
   </style>
 </head>
 <body>
-  <div id="loading">
-    <div>Loading game...</div>
-  </div>
-
   <div id="game-container" class="hidden">
     <div id="phaser-game"></div>
     <div id="chat-panel">
       <div id="chat-log"></div>
+      <div id="thinking-area" class="hidden">
+        <div class="thinking-content">
+          <span class="thinking-agent"></span>
+          <span>thinking</span>
+          <span class="thinking-dots"></span>
+        </div>
+      </div>
       <div id="chat-input-container">
         <textarea
           id="chat-input"

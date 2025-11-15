@@ -13,6 +13,8 @@ export interface ChatMessage {
 
 export class ChatLog {
   private container: HTMLElement;
+  private thinkingArea: HTMLElement;
+  private thinkingAgentSpan: HTMLElement;
   private messages: ChatMessage[];
   private autoScroll: boolean;
 
@@ -22,7 +24,19 @@ export class ChatLog {
       throw new Error(`Chat log container '${containerId}' not found`);
     }
 
+    const thinkingArea = document.getElementById('thinking-area');
+    if (!thinkingArea) {
+      throw new Error(`Thinking area not found`);
+    }
+
+    const thinkingAgentSpan = thinkingArea.querySelector('.thinking-agent') as HTMLElement;
+    if (!thinkingAgentSpan) {
+      throw new Error(`Thinking agent span not found`);
+    }
+
     this.container = element;
+    this.thinkingArea = thinkingArea;
+    this.thinkingAgentSpan = thinkingAgentSpan;
     this.messages = [];
     this.autoScroll = true;
   }
@@ -84,32 +98,29 @@ export class ChatLog {
   }
 
   /**
-   * Add a thinking indicator
+   * Show thinking indicator in dedicated area
    */
-  thinking(agent?: string, color?: number): HTMLElement {
-    const thinkingDiv = document.createElement('div');
-    thinkingDiv.className = 'chat-message agent thinking';
+  thinking(agent?: string, color?: number): void {
+    // Set agent name
+    this.thinkingAgentSpan.textContent = agent || 'AI';
 
-    // If color provided, set background color
+    // Set color if provided
     if (color !== undefined) {
       const hexColor = '#' + color.toString(16).padStart(6, '0');
-      thinkingDiv.style.backgroundColor = hexColor;
+      this.thinkingAgentSpan.style.color = hexColor;
+    } else {
+      this.thinkingAgentSpan.style.color = '#fff';
     }
 
-    thinkingDiv.innerHTML = `
-      <div class="chat-speaker">${agent || 'AI'}</div>
-      <div class="chat-content">Thinking...</div>
-    `;
-    this.container.appendChild(thinkingDiv);
-    this.scrollToBottom();
-    return thinkingDiv;
+    // Show thinking area
+    this.thinkingArea.classList.remove('hidden');
   }
 
   /**
-   * Remove a thinking indicator
+   * Hide thinking indicator
    */
-  removeThinking(element: HTMLElement): void {
-    element.remove();
+  removeThinking(): void {
+    this.thinkingArea.classList.add('hidden');
   }
 
   /**
@@ -178,6 +189,52 @@ export class ChatLog {
    */
   getRecentMessages(count: number = 10): ChatMessage[] {
     return this.messages.slice(-count);
+  }
+
+  /**
+   * Calculate delay based on text length (simulating reading/typing time)
+   * Returns delay in milliseconds
+   */
+  private calculateDelay(text: string): number {
+    // Base delay: 20ms per character, min 300ms, max 2000ms
+    const baseDelay = Math.min(Math.max(text.length * 20, 300), 2000);
+    return baseDelay;
+  }
+
+  /**
+   * Stream messages one by one with delays
+   * Shows thinking indicator until all messages are displayed
+   */
+  async streamMessages(
+    messages: ChatMessage[],
+    thinkingAgent?: string,
+    thinkingColor?: number
+  ): Promise<void> {
+    if (messages.length === 0) return;
+
+    // Show thinking indicator
+    this.thinking(thinkingAgent, thinkingColor);
+
+    // Display messages one by one with delays
+    for (let i = 0; i < messages.length; i++) {
+      const message = messages[i];
+
+      // Wait before showing next message
+      if (i > 0) {
+        const previousMessage = messages[i - 1];
+        const delay = this.calculateDelay(previousMessage.content);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+
+      this.addMessage(message);
+    }
+
+    // Wait a bit after last message
+    const lastMessage = messages[messages.length - 1];
+    await new Promise(resolve => setTimeout(resolve, this.calculateDelay(lastMessage.content) * 0.5));
+
+    // Remove thinking indicator
+    this.removeThinking();
   }
 
   /**

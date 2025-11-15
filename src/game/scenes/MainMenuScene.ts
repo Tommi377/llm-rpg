@@ -13,7 +13,7 @@ export class MainMenuScene extends Phaser.Scene {
   private chatLog!: ChatLog;
   private gameState!: GameState;
   private agentNames: string[] = [];
-  private agentColors: number[] = [0x2d6a2d, 0x2d4a6a, 0x6a2d6a]; // Dark green, dark blue, dark purple
+  private agentColors: number[] = [0x005000, 0x0088ff, 0xff00ff];
 
   constructor() {
     super({ key: 'MainMenuScene' });
@@ -29,10 +29,8 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Welcome message
     this.chatLog.system('Welcome to LLM Squad RPG!');
-    this.chatLog.system('');
     this.chatLog.system('In this game, your squad of agents acts autonomously based on AI reasoning.');
     this.chatLog.system('You guide them with a "doctrine" - strategic instructions they follow.');
-    this.chatLog.system('');
     this.chatLog.system('First, let\'s check your Ollama connection and create your party...');
 
     // Draw title
@@ -76,10 +74,9 @@ export class MainMenuScene extends Phaser.Scene {
 
       if (!isConnected) {
         this.chatLog.system('ERROR: Could not connect to Ollama!');
-        this.chatLog.system('');
         this.chatLog.system('Please make sure Ollama is running:');
         this.chatLog.system('1. Install Ollama from https://ollama.ai');
-        this.chatLog.system('2. Run: ollama run llama3');
+        this.chatLog.system('2. Run: ollama run llama3.2');
         this.chatLog.system('3. Keep it running and refresh this page');
         return;
       }
@@ -92,7 +89,6 @@ export class MainMenuScene extends Phaser.Scene {
         this.chatLog.system(`Available models: ${models.join(', ')}`);
       }
 
-      this.chatLog.system('');
       this.chatLog.system('Creating your party of 3 agents...');
 
       // Create input forms for agent names
@@ -104,7 +100,7 @@ export class MainMenuScene extends Phaser.Scene {
 
   private showAgentNameInput(): void {
     const centerX = this.cameras.main.centerX;
-    let currentY = 220;
+    let currentY = 200;
 
     this.add.text(centerX, currentY, 'Name Your Agents:', {
       fontSize: '20px',
@@ -121,8 +117,8 @@ export class MainMenuScene extends Phaser.Scene {
       const inputContainer = document.createElement('div');
       inputContainer.style.cssText = `
         position: absolute;
-        left: 50%;
-        top: ${currentY + i * 60}px;
+        left: calc(50% - 200px);
+        top: ${currentY + i * 60 + 80}px;
         transform: translateX(-50%);
         z-index: 100;
       `;
@@ -190,8 +186,6 @@ export class MainMenuScene extends Phaser.Scene {
 
       this.chatLog.system(`Creating ${name}...`);
 
-      const thinking = this.chatLog.thinking(name, color);
-
       try {
         // Create agent
         const agent = Agent.createRandom(name, color);
@@ -200,17 +194,34 @@ export class MainMenuScene extends Phaser.Scene {
         const personality = await AgentAI.generatePersonality(name);
         agent.setPersonality(personality);
 
-        this.chatLog.removeThinking(thinking);
-
-        this.chatLog.agent(name, `Personality: ${personality.personality}`, color);
-        this.chatLog.agent(name, `Flaw: ${personality.flaw}`, color);
-        this.chatLog.agent(name, `Signature Skill: ${personality.signatureSkill}`, color);
-        this.chatLog.system(`Stats: HP ${agent.maxHp} | ATT ${agent.attack} | MIND ${agent.mind}`);
-        this.chatLog.system('');
+        // Stream the personality info with thinking indicator
+        await this.chatLog.streamMessages([
+          {
+            type: 'agent',
+            speaker: name,
+            content: `Personality: ${personality.personality}`,
+            color,
+          },
+          {
+            type: 'agent',
+            speaker: name,
+            content: `Flaw: ${personality.flaw}`,
+            color,
+          },
+          {
+            type: 'agent',
+            speaker: name,
+            content: `Signature Skill: ${personality.signatureSkill}`,
+            color,
+          },
+          {
+            type: 'system',
+            content: `Stats: HP ${agent.maxHp} | ATT ${agent.attack} | MIND ${agent.mind}`,
+          },
+        ], name, color);
 
         agents.push(agent);
       } catch (error) {
-        this.chatLog.removeThinking(thinking);
         this.chatLog.system(`Error creating ${name}: ${error}`);
       }
     }
@@ -224,7 +235,6 @@ export class MainMenuScene extends Phaser.Scene {
     this.gameState.setAgents(agents);
 
     this.chatLog.system('Party created successfully!');
-    this.chatLog.system('');
     this.chatLog.system('Your adventure begins...');
 
     // Transition to gameplay
