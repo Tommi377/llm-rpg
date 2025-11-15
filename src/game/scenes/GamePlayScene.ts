@@ -29,9 +29,7 @@ export class GamePlayScene extends Phaser.Scene {
 
     // Show game container
     const gameContainer = document.getElementById('game-container');
-    const loading = document.getElementById('loading');
     if (gameContainer) gameContainer.classList.remove('hidden');
-    if (loading) loading.classList.add('hidden');
 
     // Title
     this.add.text(this.cameras.main.centerX, 40, 'THE ADVENTURE', {

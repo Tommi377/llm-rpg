@@ -30,6 +30,7 @@
       justify-content: center;
       align-items: center;
       background: #000;
+      width: 800px;
     }
 
     #chat-panel {
@@ -101,28 +102,12 @@
       margin-bottom: 4px;
     }
 
-    #loading {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #000;
-      padding: 20px;
-      border: 2px solid #00ff00;
-      border-radius: 4px;
-      z-index: 1000;
-    }
-
     .hidden {
       display: none;
     }
   </style>
 </head>
 <body>
-  <div id="loading">
-    <div>Loading game...</div>
-  </div>
-
   <div id="game-container" class="hidden">
     <div id="phaser-game"></div>
     <div id="chat-panel">

@@ -13,7 +13,7 @@ export class MainMenuScene extends Phaser.Scene {
   private chatLog!: ChatLog;
   private gameState!: GameState;
   private agentNames: string[] = [];
-  private agentColors: number[] = [0x2d6a2d, 0x2d4a6a, 0x6a2d6a]; // Dark green, dark blue, dark purple
+  private agentColors: number[] = [0x00ff00, 0x0088ff, 0xff00ff];
 
   constructor() {
     super({ key: 'MainMenuScene' });
@@ -104,7 +104,7 @@ export class MainMenuScene extends Phaser.Scene {
 
   private showAgentNameInput(): void {
     const centerX = this.cameras.main.centerX;
-    let currentY = 220;
+    let currentY = 200;
 
     this.add.text(centerX, currentY, 'Name Your Agents:', {
       fontSize: '20px',
@@ -121,8 +121,8 @@ export class MainMenuScene extends Phaser.Scene {
       const inputContainer = document.createElement('div');
       inputContainer.style.cssText = `
         position: absolute;
-        left: 50%;
-        top: ${currentY + i * 60}px;
+        left: calc(50% - 200px);
+        top: ${currentY + i * 60 + 80}px;
         transform: translateX(-50%);
         z-index: 100;
       `;
@@ -190,7 +190,7 @@ export class MainMenuScene extends Phaser.Scene {
 
       this.chatLog.system(`Creating ${name}...`);
 
-      const thinking = this.chatLog.thinking(name, color);
+      const thinking = this.chatLog.thinking(name);
 
       try {
         // Create agent
@@ -202,9 +202,9 @@ export class MainMenuScene extends Phaser.Scene {
 
         this.chatLog.removeThinking(thinking);
 
-        this.chatLog.agent(name, `Personality: ${personality.personality}`, color);
-        this.chatLog.agent(name, `Flaw: ${personality.flaw}`, color);
-        this.chatLog.agent(name, `Signature Skill: ${personality.signatureSkill}`, color);
+        this.chatLog.agent(name, `Personality: ${personality.personality}`);
+        this.chatLog.agent(name, `Flaw: ${personality.flaw}`);
+        this.chatLog.agent(name, `Signature Skill: ${personality.signatureSkill}`);
         this.chatLog.system(`Stats: HP ${agent.maxHp} | ATT ${agent.attack} | MIND ${agent.mind}`);
         this.chatLog.system('');
 
