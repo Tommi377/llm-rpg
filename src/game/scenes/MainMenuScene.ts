@@ -173,16 +173,33 @@ export class MainMenuScene extends Phaser.Scene {
       groqButton.setScale(currentProvider === "groq" ? 1.1 : 1);
     });
 
+    // Get actual canvas position for proper input positioning
+    const canvas = this.game.canvas;
+
     // Create API key input container (initially hidden)
     const apiKeyContainer = document.createElement("div");
+
+    // Function to update position
+    const updatePosition = () => {
+      requestAnimationFrame(() => {
+        const canvasRect = canvas.getBoundingClientRect();
+        apiKeyContainer.style.left = `${canvasRect.left + canvasRect.width / 2 - 150}px`;
+        apiKeyContainer.style.top = `${canvasRect.top + currentY + 120}px`;
+      });
+    };
+
     apiKeyContainer.style.cssText = `
       position: absolute;
-      left: calc(50% - 140px);
-      top: ${currentY + 120}px;
-      transform: translateX(-50%);
       z-index: 100;
       display: ${currentProvider === "groq" ? "block" : "none"};
     `;
+
+    updatePosition();
+
+    // Update position on window resize and scale events
+    const resizeHandler = () => updatePosition();
+    window.addEventListener("resize", resizeHandler);
+    this.scale.on("resize", updatePosition);
 
     const apiKeyInput = document.createElement("input");
     apiKeyInput.type = "password";
@@ -266,6 +283,8 @@ export class MainMenuScene extends Phaser.Scene {
       groqButton.destroy();
       continueButton.destroy();
       apiKeyContainer.remove();
+      window.removeEventListener("resize", resizeHandler);
+      this.scale.off("resize", updatePosition);
 
       // Check connection
       await this.checkConnectionAndProceed();
@@ -287,15 +306,32 @@ export class MainMenuScene extends Phaser.Scene {
 
     currentY += 40;
 
+    // Get actual canvas position for proper input positioning
+    const canvas = this.game.canvas;
+
     // Create API key input container
     const apiKeyContainer = document.createElement("div");
+
+    // Function to update position
+    const updatePosition = () => {
+      requestAnimationFrame(() => {
+        const canvasRect = canvas.getBoundingClientRect();
+        apiKeyContainer.style.left = `${canvasRect.left + canvasRect.width / 2 - 150}px`;
+        apiKeyContainer.style.top = `${canvasRect.top + currentY + 90}px`;
+      });
+    };
+
     apiKeyContainer.style.cssText = `
       position: absolute;
-      left: calc(50% - 140px);
-      top: ${currentY + 90}px;
-      transform: translateX(-50%);
       z-index: 100;
     `;
+
+    updatePosition();
+
+    // Update position on window resize and scale events
+    const resizeHandler = () => updatePosition();
+    window.addEventListener("resize", resizeHandler);
+    this.scale.on("resize", updatePosition);
 
     const apiKeyInput = document.createElement("input");
     apiKeyInput.type = "password";
@@ -365,6 +401,8 @@ export class MainMenuScene extends Phaser.Scene {
       helpText.destroy();
       continueButton.destroy();
       apiKeyContainer.remove();
+      window.removeEventListener("resize", resizeHandler);
+      this.scale.off("resize", updatePosition);
 
       // Check connection
       await this.checkConnectionAndProceed();
@@ -455,18 +493,37 @@ export class MainMenuScene extends Phaser.Scene {
 
     currentY += 50;
 
+    // Get actual canvas position for proper input positioning
+    const canvas = this.game.canvas;
+
     const inputFields: HTMLInputElement[] = [];
+    const resizeHandlers: { window: () => void; scale: () => void }[] = [];
 
     // Create 3 input fields
     for (let i = 0; i < 3; i++) {
       const inputContainer = document.createElement("div");
+
+      // Function to update position
+      const updatePosition = () => {
+        requestAnimationFrame(() => {
+          const canvasRect = canvas.getBoundingClientRect();
+          inputContainer.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
+          inputContainer.style.top = `${canvasRect.top + currentY + i * 60 + 100}px`;
+        });
+      };
+
       inputContainer.style.cssText = `
         position: absolute;
-        left: calc(50% - 140px);
-        top: ${currentY + i * 60 + 100}px;
-        transform: translateX(-50%);
         z-index: 100;
       `;
+
+      updatePosition();
+
+      // Update position on window resize and scale events
+      const resizeHandler = () => updatePosition();
+      window.addEventListener("resize", resizeHandler);
+      this.scale.on("resize", updatePosition);
+      resizeHandlers.push({ window: resizeHandler, scale: updatePosition });
 
       const input = document.createElement("input");
       input.type = "text";
@@ -520,6 +577,12 @@ export class MainMenuScene extends Phaser.Scene {
       // Remove input fields
       inputFields.forEach((input) => input.parentElement?.remove());
       startButton.destroy();
+
+      // Clean up resize handlers
+      resizeHandlers.forEach((handlers) => {
+        window.removeEventListener("resize", handlers.window);
+        this.scale.off("resize", handlers.scale);
+      });
 
       await this.createParty();
     });

@@ -1,36 +1,38 @@
-import { ENEMY_TEMPLATES } from '@/combat/Enemy';
-import Phaser from 'phaser';
+import { ENEMY_TEMPLATES } from "@/combat/Enemy";
+import Phaser from "phaser";
 
 export class LoadingScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'LoadingScene' });
+    super({ key: "LoadingScene" });
   }
 
   preload(): void {
     const { width, height } = this.scale;
 
     // Simple loading text
-    const loadingText = this.add.text(width / 2, height / 2, 'Loading...', {
-      fontFamily: 'Courier New',
-      fontSize: '24px',
-      color: '#00ff00',
-    }).setOrigin(0.5);
+    const loadingText = this.add
+      .text(width / 2, height / 2, "Loading...", {
+        fontFamily: "Courier New",
+        fontSize: "24px",
+        color: "#00ff00",
+      })
+      .setOrigin(0.5);
 
-    console.group('%c[LOADING ASSETS]', 'color: cyan; font-weight: bold;');
+    console.group("%c[LOADING ASSETS]", "color: cyan; font-weight: bold;");
 
     //
     // ===== DEFAULTS =====
     //
-    console.log('→ Loading default graphics...');
-    this.load.image('default', 'assets/defaults/default.png');
-    this.load.image('default-agent', 'assets/defaults/default-agent.png');
+    console.log("→ Loading default graphics...");
+    this.load.image("default", "assets/defaults/default.png");
+    this.load.image("default-agent", "assets/defaults/default-agent.png");
 
     //
     // ===== AGENT SPRITES =====
     //
-    const agentKeys = ['knight', 'mage', 'ranger', 'healer', 'rogue'];
+    const agentKeys = ["knight", "mage", "ranger", "healer", "rogue"];
     console.log(`→ Loading agent sprites:`, agentKeys);
-    agentKeys.forEach(key => {
+    agentKeys.forEach((key) => {
       this.load.image(key, `assets/agents/${key}.png`);
     });
 
@@ -55,22 +57,22 @@ export class LoadingScene extends Phaser.Scene {
     //
     // ===== DEBUG: HOOK LOAD EVENTS =====
     //
-    this.load.on('filecomplete', (key: string) => {
+    this.load.on("filecomplete", (key: string) => {
       console.log(`✔ Loaded: ${key}`);
     });
 
-    this.load.on('loaderror', (file: Phaser.Loader.File) => {
+    this.load.on("loaderror", (file: Phaser.Loader.File) => {
       console.warn(`✖ Failed to load: ${file.key}`, file.src);
     });
 
-    this.load.on('progress', (value: number) => {
+    this.load.on("progress", (value: number) => {
       loadingText.setText(`Loading... ${Math.floor(value * 100)}%`);
     });
 
-    this.load.on('complete', () => {
-      loadingText.setText('Ready!');
+    this.load.on("complete", () => {
+      loadingText.setText("Ready!");
       console.groupEnd();
-      console.log('%cAll assets loaded.', 'color: lime; font-weight: bold;');
+      console.log("%cAll assets loaded.", "color: lime; font-weight: bold;");
 
       // Debug summary check
       this.debugTextureCheck();
@@ -81,42 +83,37 @@ export class LoadingScene extends Phaser.Scene {
    * Debug helper to verify all assets exist in the Texture Manager
    */
   debugTextureCheck(): void {
-    console.group('%c[TEXTURE VALIDATION]', 'color: yellow; font-weight: bold;');
+    console.group(
+      "%c[TEXTURE VALIDATION]",
+      "color: yellow; font-weight: bold;",
+    );
     const missing: string[] = [];
 
     const check = (key: string) => {
       if (!this.textures.exists(key)) {
         missing.push(key);
-        console.error(`✖ MISSING TEXTURE: ${key}`);
       } else {
         console.log(`✔ Texture OK: ${key}`);
       }
     };
 
     // Check defaults
-    check('default');
-    check('default-agent');
+    check("default");
+    check("default-agent");
 
     // Check agents
-    ['knight', 'mage', 'ranger', 'healer', 'rogue'].forEach(check);
+    ["knight", "mage", "ranger", "healer", "rogue"].forEach(check);
 
     // Check enemies
-Object.values(ENEMY_TEMPLATES)
-  .map(t => t.spriteKey)
-  .filter((key): key is string => typeof key === 'string')
-  .forEach(check);
-
-
-    if (missing.length === 0) {
-      console.log('%cAll textures accounted for.', 'color: lime;');
-    } else {
-      console.warn(`Missing ${missing.length} textures:`, missing);
-    }
+    Object.values(ENEMY_TEMPLATES)
+      .map((t) => t.spriteKey)
+      .filter((key): key is string => typeof key === "string")
+      .forEach(check);
 
     console.groupEnd();
   }
 
   create(): void {
-    this.scene.start('MainMenuScene');
+    this.scene.start("MainMenuScene");
   }
 }
