@@ -41,11 +41,11 @@ export class MainMenuScene extends Phaser.Scene {
       type: "system",
       content: "You can guide them with strategic instructions.",
     });
-    await this.chatLog.streamMessage({
-      type: "system",
-      content:
-        "First, let's check your Ollama connection and create your party...",
-    });
+    // await this.chatLog.streamMessage({
+    //   type: "system",
+    //   content:
+    //     "First, let's check your Ollama connection and create your party...",
+    // });
 
     // Draw title
     const title = this.add.text(this.cameras.main.centerX, 100, "captAIn", {
@@ -76,11 +76,20 @@ export class MainMenuScene extends Phaser.Scene {
 
   private async initializeGame(): Promise<void> {
     try {
-      // Show provider selection first
-      await this.chatLog.streamMessage({
-        type: "system",
-        content: "Please select your LLM provider:",
-      });
+      // Check if we're in dev mode
+      const isDevMode = import.meta.env.DEV;
+
+      if (isDevMode) {
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "Please select your LLM provider:",
+        });
+      } else {
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "Please configure your API access:",
+        });
+      }
 
       this.showProviderSelection();
     } catch (error) {
@@ -95,9 +104,20 @@ export class MainMenuScene extends Phaser.Scene {
     const centerX = this.cameras.main.centerX;
     let currentY = 250;
 
-    // Provider selection
+    // Check if we're in dev mode
+    const isDevMode = import.meta.env.DEV;
+
+    // In production, skip provider selection and go straight to Groq API key input
+    if (!isDevMode) {
+      ollama.setProvider("groq");
+      ollama.storeProvider("groq");
+      this.showGroqApiKeyInput();
+      return;
+    }
+
+    // Provider selection (dev mode only)
     const providerText = this.add
-      .text(centerX, currentY, "Select Provider:", {
+      .text(centerX, currentY, "Select Provider (Dev Mode):", {
         fontSize: "20px",
         color: "#ffffff",
         fontFamily: "Courier New",
@@ -157,8 +177,8 @@ export class MainMenuScene extends Phaser.Scene {
     const apiKeyContainer = document.createElement("div");
     apiKeyContainer.style.cssText = `
       position: absolute;
-      left: 50%;
-      top: ${currentY + 60}px;
+      left: calc(50% - 140px);
+      top: ${currentY + 120}px;
       transform: translateX(-50%);
       z-index: 100;
       display: ${currentProvider === "groq" ? "block" : "none"};
@@ -252,6 +272,105 @@ export class MainMenuScene extends Phaser.Scene {
     });
   }
 
+  private showGroqApiKeyInput(): void {
+    const centerX = this.cameras.main.centerX;
+    let currentY = 250;
+
+    // API key input prompt
+    this.add
+      .text(centerX, currentY, "Enter your Groq API Key:", {
+        fontSize: "20px",
+        color: "#ffffff",
+        fontFamily: "Courier New",
+      })
+      .setOrigin(0.5);
+
+    currentY += 40;
+
+    // Create API key input container
+    const apiKeyContainer = document.createElement("div");
+    apiKeyContainer.style.cssText = `
+      position: absolute;
+      left: calc(50% - 140px);
+      top: ${currentY + 90}px;
+      transform: translateX(-50%);
+      z-index: 100;
+    `;
+
+    const apiKeyInput = document.createElement("input");
+    apiKeyInput.type = "password";
+    apiKeyInput.placeholder = "Enter Groq API Key";
+    apiKeyInput.value = ollama.getStoredApiKey() || "";
+    apiKeyInput.style.cssText = `
+      padding: 10px;
+      font-size: 16px;
+      font-family: 'Courier New', monospace;
+      background: #333;
+      color: #fff;
+      border: 2px solid #00ff00;
+      width: 300px;
+      text-align: center;
+    `;
+
+    apiKeyContainer.appendChild(apiKeyInput);
+    document.body.appendChild(apiKeyContainer);
+
+    // Help text
+    const helpText = this.add
+      .text(
+        centerX,
+        currentY + 80,
+        "Get your free key at: console.groq.com/keys",
+        {
+          fontSize: "14px",
+          color: "#888888",
+          fontFamily: "Courier New",
+        },
+      )
+      .setOrigin(0.5);
+
+    // Continue button
+    const continueButton = this.add
+      .text(centerX, currentY + 120, "[ CONTINUE ]", {
+        fontSize: "24px",
+        color: "#00ff00",
+        fontFamily: "Courier New",
+      })
+      .setOrigin(0.5);
+
+    continueButton.setInteractive({ useHandCursor: true });
+
+    continueButton.on("pointerover", () => {
+      continueButton.setScale(1.1);
+    });
+
+    continueButton.on("pointerout", () => {
+      continueButton.setScale(1);
+    });
+
+    continueButton.on("pointerdown", async () => {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "Please enter your Groq API key!",
+        });
+        return;
+      }
+
+      ollama.setProvider("groq", apiKey);
+      ollama.storeProvider("groq");
+
+      // Clean up UI
+      helpText.destroy();
+      continueButton.destroy();
+      apiKeyContainer.remove();
+
+      // Check connection
+      await this.checkConnectionAndProceed();
+    });
+  }
+
   private async checkConnectionAndProceed(): Promise<void> {
     const provider = ollama.getProvider();
     const providerName = provider === "ollama" ? "Ollama" : "Groq";
@@ -305,7 +424,7 @@ export class MainMenuScene extends Phaser.Scene {
     });
 
     // List available models
-    const models = await ollama.listModels();
+    //const models = await ollama.listModels();
     // if (models.length > 0) {
     //   await this.chatLog.streamMessage({
     //     type: "system",
