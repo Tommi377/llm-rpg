@@ -23,23 +23,19 @@ export class HPBar {
   ) {
     this.width = width;
 
-    // Create background
     this.background = scene.add.rectangle(0, 0, width, height, 0x333333);
     this.background.setOrigin(0, 0.5);
     this.background.setStrokeStyle(1, 0xffffff);
 
-    // Create HP bar
     this.bar = scene.add.rectangle(0, 0, width, height, 0x00ff00);
     this.bar.setOrigin(0, 0.5);
 
-    // Create text
     this.text = scene.add.text(width / 2, 0, '', {
       fontSize: '10px',
       color: '#ffffff',
     });
     this.text.setOrigin(0.5, 0.5);
 
-    // Container
     this.container = scene.add.container(x, y, [
       this.background,
       this.bar,
@@ -51,17 +47,11 @@ export class HPBar {
     const percent = Math.max(0, Math.min(1, current / max));
     this.bar.width = this.width * percent;
 
-    if (percent > 0.6) {
-      this.bar.setFillStyle(0x00ff00);
-    } else if (percent > 0.3) {
-      this.bar.setFillStyle(0xffff00);
-    } else {
-      this.bar.setFillStyle(0xff0000);
-    }
+    if (percent > 0.6) this.bar.setFillStyle(0x00ff00);
+    else if (percent > 0.3) this.bar.setFillStyle(0xffff00);
+    else this.bar.setFillStyle(0xff0000);
 
-    if (showText) {
-      this.text.setText(`${Math.floor(current)}/${Math.floor(max)}`);
-    }
+    if (showText) this.text.setText(`${Math.floor(current)}/${Math.floor(max)}`);
   }
 
   setVisible(visible: boolean): void {
@@ -89,17 +79,18 @@ export class AgentDisplay {
     this.scene = scene;
     this.agent = agent;
 
-    // Replace rectangle with sprite
     this.sprite = scene.add.image(0, 0, agent.spriteKey || 'default');
     this.sprite.setOrigin(0.5, 0.5);
-    this.sprite.setScale(1.3);
 
-    // Name text
+    // Cap height at 100px, keep aspect ratio
+    const maxHeight = 50;
+    const scale = maxHeight / this.sprite.height;
+    this.sprite.setScale(scale);
+
     this.nameText = scene.add.text(0, -40, agent.name, {
       fontSize: '14px',
       color: '#ffffff',
-    });
-    this.nameText.setOrigin(0.5, 0.5);
+    }).setOrigin(0.5, 0.5);
 
     this.hpBar = new HPBar(scene, 0, 40, 80, 10);
 
@@ -120,16 +111,12 @@ export class AgentDisplay {
       this.nameText.setAlpha(0.4);
     }
 
-    if (this.agent.isDefending) {
-      this.sprite.setTint(0x00ffff);
-    } else {
-      this.sprite.clearTint();
-    }
+    if (this.agent.isDefending) this.sprite.setTint(0x00ffff);
+    else this.sprite.clearTint();
   }
 
   async playAttack(targetX: number): Promise<void> {
     const startX = this.container.x;
-
     await new Promise<void>(resolve => {
       this.scene.tweens.add({
         targets: this.container,
@@ -159,13 +146,8 @@ export class AgentDisplay {
     this.hpBar.destroy();
   }
 
-  getX(): number {
-    return this.container.x;
-  }
-
-  getY(): number {
-    return this.container.y;
-  }
+  getX(): number { return this.container.x; }
+  getY(): number { return this.container.y; }
 }
 
 export class EnemyDisplay {
@@ -180,16 +162,18 @@ export class EnemyDisplay {
     this.scene = scene;
     this.enemy = enemy;
 
-    // Replace rectangle with sprite
     this.sprite = scene.add.image(0, 0, enemy.spriteKey || 'default');
     this.sprite.setOrigin(0.5, 0.5);
-    this.sprite.setScale(1.3);
+
+    // Cap height at 100px, keep aspect ratio
+    const maxHeight = 80;
+    const scale = maxHeight / this.sprite.height;
+    this.sprite.setScale(scale);
 
     this.nameText = scene.add.text(0, -40, enemy.name, {
       fontSize: '14px',
       color: '#ffffff',
-    });
-    this.nameText.setOrigin(0.5, 0.5);
+    }).setOrigin(0.5, 0.5);
 
     this.hpBar = new HPBar(scene, 0, 40, 80, 10);
 
@@ -210,16 +194,12 @@ export class EnemyDisplay {
       this.nameText.setAlpha(0.4);
     }
 
-    if (this.enemy.isDefending) {
-      this.sprite.setTint(0x00ffff);
-    } else {
-      this.sprite.clearTint();
-    }
+    if (this.enemy.isDefending) this.sprite.setTint(0x00ffff);
+    else this.sprite.clearTint();
   }
 
   async playAttack(targetX: number): Promise<void> {
     const startX = this.container.x;
-
     await new Promise<void>(resolve => {
       this.scene.tweens.add({
         targets: this.container,
@@ -249,11 +229,6 @@ export class EnemyDisplay {
     this.hpBar.destroy();
   }
 
-  getX(): number {
-    return this.container.x;
-  }
-
-  getY(): number {
-    return this.container.y;
-  }
+  getX(): number { return this.container.x; }
+  getY(): number { return this.container.y; }
 }
