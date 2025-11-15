@@ -20,6 +20,7 @@ export interface AgentData extends AgentStats, AgentPersonality {
   name: string;
   trauma: string[];
   isDefending: boolean;
+  spriteKey?: string;
 }
 
 export class Agent {
@@ -33,9 +34,14 @@ export class Agent {
   signatureSkill: string;
   trauma: string[];
   isDefending: boolean;
-  color: number; // Color for visual representation
 
-  constructor(name: string, color: number = 0x00ff00) {
+  /** Sprite graphics key (replaces color visuals) */
+  spriteKey: string;
+
+  /** Optional fallback color if no sprite */
+  color: number;
+
+  constructor(name: string, color: number = 0x00ff00, spriteKey: string = 'default-agent') {
     this.name = name;
     this.hp = 100;
     this.maxHp = 100;
@@ -46,7 +52,16 @@ export class Agent {
     this.signatureSkill = '';
     this.trauma = [];
     this.isDefending = false;
+
     this.color = color;
+    this.spriteKey = spriteKey; // NEW
+  }
+
+  /**
+   * Set sprite graphics
+   */
+  setSprite(key: string): void {
+    this.spriteKey = key;
   }
 
   /**
@@ -71,7 +86,7 @@ export class Agent {
   takeDamage(amount: number): number {
     const actualDamage = this.isDefending ? Math.floor(amount * 0.5) : amount;
     this.hp = Math.max(0, this.hp - actualDamage);
-    this.isDefending = false; // Reset defense after taking damage
+    this.isDefending = false;
     return actualDamage;
   }
 
@@ -144,6 +159,7 @@ export class Agent {
       signatureSkill: this.signatureSkill,
       trauma: [...this.trauma],
       isDefending: this.isDefending,
+      spriteKey: this.spriteKey, // NEW
     };
   }
 
@@ -151,7 +167,7 @@ export class Agent {
    * Load from JSON
    */
   static fromJSON(data: AgentData, color: number = 0x00ff00): Agent {
-    const agent = new Agent(data.name, color);
+    const agent = new Agent(data.name, color, data.spriteKey ?? 'default-agent');
     agent.hp = data.hp;
     agent.maxHp = data.maxHp;
     agent.attack = data.attack;
@@ -170,7 +186,6 @@ export class Agent {
   static createRandom(name: string, color: number = 0x00ff00): Agent {
     const agent = new Agent(name, color);
 
-    // Randomize starting stats slightly
     agent.maxHp = 80 + Math.floor(Math.random() * 40); // 80-120
     agent.hp = agent.maxHp;
     agent.attack = 3 + Math.floor(Math.random() * 5); // 3-7

@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { MainMenuScene } from './scenes/MainMenuScene';
 import { GamePlayScene } from './scenes/GamePlayScene';
 import { CombatScene } from './scenes/CombatScene';
+import { LoadingScene } from './scenes/LoadingScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -13,7 +14,7 @@ const config: Phaser.Types.Core.GameConfig = {
   height: 600,
   parent: 'phaser-game',
   backgroundColor: '#000000',
-  scene: [MainMenuScene, GamePlayScene, CombatScene],
+  scene: [LoadingScene, MainMenuScene, GamePlayScene, CombatScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,

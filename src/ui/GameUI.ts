@@ -47,20 +47,16 @@ export class HPBar {
     ]);
   }
 
-  /**
-   * Update HP bar
-   */
   update(current: number, max: number, showText: boolean = true): void {
     const percent = Math.max(0, Math.min(1, current / max));
     this.bar.width = this.width * percent;
 
-    // Color based on HP percentage
     if (percent > 0.6) {
-      this.bar.setFillStyle(0x00ff00); // Green
+      this.bar.setFillStyle(0x00ff00);
     } else if (percent > 0.3) {
-      this.bar.setFillStyle(0xffff00); // Yellow
+      this.bar.setFillStyle(0xffff00);
     } else {
-      this.bar.setFillStyle(0xff0000); // Red
+      this.bar.setFillStyle(0xff0000);
     }
 
     if (showText) {
@@ -68,23 +64,14 @@ export class HPBar {
     }
   }
 
-  /**
-   * Set visibility
-   */
   setVisible(visible: boolean): void {
     this.container.setVisible(visible);
   }
 
-  /**
-   * Destroy
-   */
   destroy(): void {
     this.container.destroy();
   }
 
-  /**
-   * Set position
-   */
   setPosition(x: number, y: number): void {
     this.container.setPosition(x, y);
   }
@@ -93,7 +80,7 @@ export class HPBar {
 export class AgentDisplay {
   private scene: Phaser.Scene;
   private agent: Agent;
-  private sprite: Phaser.GameObjects.Rectangle;
+  private sprite: Phaser.GameObjects.Image;
   private nameText: Phaser.GameObjects.Text;
   private hpBar: HPBar;
   private container: Phaser.GameObjects.Container;
@@ -102,9 +89,10 @@ export class AgentDisplay {
     this.scene = scene;
     this.agent = agent;
 
-    // Create sprite (colored rectangle for now)
-    this.sprite = scene.add.rectangle(0, 0, 40, 60, agent.color);
-    this.sprite.setStrokeStyle(2, 0xffffff);
+    // Replace rectangle with sprite
+    this.sprite = scene.add.image(0, 0, agent.spriteKey || 'default');
+    this.sprite.setOrigin(0.5, 0.5);
+    this.sprite.setScale(1.3);
 
     // Name text
     this.nameText = scene.add.text(0, -40, agent.name, {
@@ -113,10 +101,8 @@ export class AgentDisplay {
     });
     this.nameText.setOrigin(0.5, 0.5);
 
-    // HP bar
     this.hpBar = new HPBar(scene, 0, 40, 80, 10);
 
-    // Container
     this.container = scene.add.container(x, y, [
       this.sprite,
       this.nameText,
@@ -125,30 +111,22 @@ export class AgentDisplay {
     this.update();
   }
 
-  /**
-   * Update display
-   */
   update(): void {
     this.hpBar.update(this.agent.hp, this.agent.maxHp);
     this.hpBar.setPosition(this.container.x, this.container.y + 40);
 
-    // Fade out if dead
     if (!this.agent.isAlive()) {
-      this.sprite.setAlpha(0.3);
-      this.nameText.setAlpha(0.3);
+      this.sprite.setTint(0x666666);
+      this.nameText.setAlpha(0.4);
     }
 
-    // Highlight if defending
     if (this.agent.isDefending) {
-      this.sprite.setStrokeStyle(3, 0x00ffff);
+      this.sprite.setTint(0x00ffff);
     } else {
-      this.sprite.setStrokeStyle(2, 0xffffff);
+      this.sprite.clearTint();
     }
   }
 
-  /**
-   * Play attack animation
-   */
   async playAttack(targetX: number): Promise<void> {
     const startX = this.container.x;
 
@@ -166,9 +144,6 @@ export class AgentDisplay {
     });
   }
 
-  /**
-   * Play hit animation
-   */
   playHit(): void {
     this.scene.tweens.add({
       targets: [this.sprite, this.nameText],
@@ -179,9 +154,6 @@ export class AgentDisplay {
     });
   }
 
-  /**
-   * Destroy
-   */
   destroy(): void {
     this.container.destroy();
     this.hpBar.destroy();
@@ -199,7 +171,7 @@ export class AgentDisplay {
 export class EnemyDisplay {
   private scene: Phaser.Scene;
   private enemy: Enemy;
-  private sprite: Phaser.GameObjects.Rectangle;
+  private sprite: Phaser.GameObjects.Image;
   private nameText: Phaser.GameObjects.Text;
   private hpBar: HPBar;
   private container: Phaser.GameObjects.Container;
@@ -208,21 +180,19 @@ export class EnemyDisplay {
     this.scene = scene;
     this.enemy = enemy;
 
-    // Create sprite
-    this.sprite = scene.add.rectangle(0, 0, 40, 60, enemy.color);
-    this.sprite.setStrokeStyle(2, 0xff0000);
+    // Replace rectangle with sprite
+    this.sprite = scene.add.image(0, 0, enemy.spriteKey || 'default');
+    this.sprite.setOrigin(0.5, 0.5);
+    this.sprite.setScale(1.3);
 
-    // Name text
     this.nameText = scene.add.text(0, -40, enemy.name, {
       fontSize: '14px',
       color: '#ffffff',
     });
     this.nameText.setOrigin(0.5, 0.5);
 
-    // HP bar
     this.hpBar = new HPBar(scene, 0, 40, 80, 10);
 
-    // Container
     this.container = scene.add.container(x, y, [
       this.sprite,
       this.nameText,
@@ -231,30 +201,22 @@ export class EnemyDisplay {
     this.update();
   }
 
-  /**
-   * Update display
-   */
   update(): void {
     this.hpBar.update(this.enemy.hp, this.enemy.maxHp);
     this.hpBar.setPosition(this.container.x, this.container.y + 40);
 
-    // Fade out if dead
     if (!this.enemy.isAlive()) {
-      this.sprite.setAlpha(0.3);
-      this.nameText.setAlpha(0.3);
+      this.sprite.setTint(0x666666);
+      this.nameText.setAlpha(0.4);
     }
 
-    // Highlight if defending
     if (this.enemy.isDefending) {
-      this.sprite.setStrokeStyle(3, 0x00ffff);
+      this.sprite.setTint(0x00ffff);
     } else {
-      this.sprite.setStrokeStyle(2, 0xff0000);
+      this.sprite.clearTint();
     }
   }
 
-  /**
-   * Play attack animation
-   */
   async playAttack(targetX: number): Promise<void> {
     const startX = this.container.x;
 
@@ -272,9 +234,6 @@ export class EnemyDisplay {
     });
   }
 
-  /**
-   * Play hit animation
-   */
   playHit(): void {
     this.scene.tweens.add({
       targets: [this.sprite, this.nameText],
@@ -285,9 +244,6 @@ export class EnemyDisplay {
     });
   }
 
-  /**
-   * Destroy
-   */
   destroy(): void {
     this.container.destroy();
     this.hpBar.destroy();
