@@ -117,8 +117,8 @@ export class MainMenuScene extends Phaser.Scene {
       const inputContainer = document.createElement('div');
       inputContainer.style.cssText = `
         position: absolute;
-        left: calc(50% - 200px);
-        top: ${currentY + i * 60 + 80}px;
+        left: calc(50% - 140px);
+        top: ${currentY + i * 60 + 100}px;
         transform: translateX(-50%);
         z-index: 100;
       `;
