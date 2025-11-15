@@ -13,7 +13,7 @@ export class MainMenuScene extends Phaser.Scene {
   private chatLog!: ChatLog;
   private gameState!: GameState;
   private agentNames: string[] = [];
-  private agentColors: number[] = [0x00ff00, 0x0088ff, 0xff00ff];
+  private agentColors: number[] = [0x005000, 0x0088ff, 0xff00ff];
 
   constructor() {
     super({ key: 'MainMenuScene' });
@@ -79,7 +79,7 @@ export class MainMenuScene extends Phaser.Scene {
         this.chatLog.system('');
         this.chatLog.system('Please make sure Ollama is running:');
         this.chatLog.system('1. Install Ollama from https://ollama.ai');
-        this.chatLog.system('2. Run: ollama run llama3');
+        this.chatLog.system('2. Run: ollama run llama3.2');
         this.chatLog.system('3. Keep it running and refresh this page');
         return;
       }
@@ -190,8 +190,6 @@ export class MainMenuScene extends Phaser.Scene {
 
       this.chatLog.system(`Creating ${name}...`);
 
-      const thinking = this.chatLog.thinking(name);
-
       try {
         // Create agent
         const agent = Agent.createRandom(name, color);
@@ -200,17 +198,38 @@ export class MainMenuScene extends Phaser.Scene {
         const personality = await AgentAI.generatePersonality(name);
         agent.setPersonality(personality);
 
-        this.chatLog.removeThinking(thinking);
-
-        this.chatLog.agent(name, `Personality: ${personality.personality}`);
-        this.chatLog.agent(name, `Flaw: ${personality.flaw}`);
-        this.chatLog.agent(name, `Signature Skill: ${personality.signatureSkill}`);
-        this.chatLog.system(`Stats: HP ${agent.maxHp} | ATT ${agent.attack} | MIND ${agent.mind}`);
-        this.chatLog.system('');
+        // Stream the personality info with thinking indicator
+        await this.chatLog.streamMessages([
+          {
+            type: 'agent',
+            speaker: name,
+            content: `Personality: ${personality.personality}`,
+            color,
+          },
+          {
+            type: 'agent',
+            speaker: name,
+            content: `Flaw: ${personality.flaw}`,
+            color,
+          },
+          {
+            type: 'agent',
+            speaker: name,
+            content: `Signature Skill: ${personality.signatureSkill}`,
+            color,
+          },
+          {
+            type: 'system',
+            content: `Stats: HP ${agent.maxHp} | ATT ${agent.attack} | MIND ${agent.mind}`,
+          },
+          {
+            type: 'system',
+            content: '',
+          },
+        ], name, color);
 
         agents.push(agent);
       } catch (error) {
-        this.chatLog.removeThinking(thinking);
         this.chatLog.system(`Error creating ${name}: ${error}`);
       }
     }

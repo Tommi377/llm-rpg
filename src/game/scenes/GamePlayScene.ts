@@ -88,7 +88,7 @@ export class GamePlayScene extends Phaser.Scene {
     this.chatLog.addSeparator(`EVENT ${this.gameState.eventCount}`);
     this.chatLog.system('Generating event...');
 
-    const thinking = this.chatLog.thinking();
+    this.chatLog.thinking();
 
     try {
       // Generate event
@@ -97,7 +97,7 @@ export class GamePlayScene extends Phaser.Scene {
         this.gameState.eventCount
       );
 
-      this.chatLog.removeThinking(thinking);
+      this.chatLog.removeThinking();
 
       if (this.currentEvent.type === 'combat') {
         // Switch to combat scene
@@ -107,7 +107,7 @@ export class GamePlayScene extends Phaser.Scene {
         await this.handleNormalEvent(this.currentEvent);
       }
     } catch (error) {
-      this.chatLog.removeThinking(thinking);
+      this.chatLog.removeThinking();
       this.chatLog.system(`Error generating event: ${error}`);
       this.time.delayedCall(2000, () => this.startNextEvent());
     }
@@ -150,19 +150,33 @@ export class GamePlayScene extends Phaser.Scene {
 
       // Display decisions
       this.chatLog.system('');
+
+      // Stream each agent's decision one at a time
       for (const agent of this.gameState.agents) {
         const decision = decisions.get(agent.name);
         if (!decision) continue;
 
-        this.chatLog.agent(agent.name, decision.action, agent.color);
-        this.chatLog.agent(agent.name, `💭 "${decision.reasoning}"`, agent.color);
+        await this.chatLog.streamMessages([
+          {
+            type: 'agent',
+            speaker: agent.name,
+            content: decision.action,
+            color: agent.color,
+          },
+          {
+            type: 'agent',
+            speaker: agent.name,
+            content: `💭 "${decision.reasoning}"`,
+            color: agent.color,
+          },
+        ], agent.name, agent.color);
       }
 
       // Judge outcomes
       this.chatLog.system('');
       this.chatLog.system('Judging outcomes...');
 
-      const thinking = this.chatLog.thinking();
+      this.chatLog.thinking();
 
       const agentActions = Array.from(decisions.entries()).map(([name, decision]) => ({
         name,
@@ -176,7 +190,7 @@ export class GamePlayScene extends Phaser.Scene {
         doctrine
       );
 
-      this.chatLog.removeThinking(thinking);
+      this.chatLog.removeThinking();
 
       // Display results
       this.chatLog.system('');
