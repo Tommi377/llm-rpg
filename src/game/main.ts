@@ -18,6 +18,13 @@ const config: Phaser.Types.Core.GameConfig = {
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 800,
+    height: 600,
+    zoom: 1,                   // avoid browser scaling
+  },
+  render: {
+    pixelArt: false,           // keep fonts smooth
+    antialias: true,
   },
   physics: {
     default: 'arcade',
