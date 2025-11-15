@@ -41,15 +41,19 @@ export class Agent {
   /** Optional fallback color if no sprite */
   color: number;
 
-  constructor(name: string, color: number = 0x00ff00, spriteKey: string = 'default-agent') {
+  constructor(
+    name: string,
+    color: number = 0x00ff00,
+    spriteKey: string = "default-agent",
+  ) {
     this.name = name;
-    this.hp = 100;
-    this.maxHp = 100;
+    this.hp = 8;
+    this.maxHp = 8;
     this.attack = 5;
     this.mind = 5;
-    this.personality = '';
-    this.flaw = '';
-    this.signatureSkill = '';
+    this.personality = "";
+    this.flaw = "";
+    this.signatureSkill = "";
     this.trauma = [];
     this.isDefending = false;
 
@@ -125,12 +129,9 @@ export class Agent {
   /**
    * Modify stats
    */
-  modifyStats(changes: { hp?: number; attack?: number; mind?: number }): void {
+  modifyStats(changes: { hp?: number; mind?: number }): void {
     if (changes.hp !== undefined) {
       this.hp = Math.max(0, Math.min(this.maxHp, this.hp + changes.hp));
-    }
-    if (changes.attack !== undefined) {
-      this.attack = Math.max(1, this.attack + changes.attack);
     }
     if (changes.mind !== undefined) {
       this.mind = Math.max(1, this.mind + changes.mind);
@@ -141,7 +142,7 @@ export class Agent {
    * Get a stat summary string
    */
   getStatsSummary(): string {
-    return `${this.name} | HP: ${this.hp}/${this.maxHp} | ATT: ${this.attack} | MIND: ${this.mind}`;
+    return `${this.name} | HP: ${this.hp}/${this.maxHp} | MIND: ${this.mind}`;
   }
 
   /**
@@ -167,7 +168,11 @@ export class Agent {
    * Load from JSON
    */
   static fromJSON(data: AgentData, color: number = 0x00ff00): Agent {
-    const agent = new Agent(data.name, color, data.spriteKey ?? 'default-agent');
+    const agent = new Agent(
+      data.name,
+      color,
+      data.spriteKey ?? "default-agent",
+    );
     agent.hp = data.hp;
     agent.maxHp = data.maxHp;
     agent.attack = data.attack;
@@ -186,7 +191,7 @@ export class Agent {
   static createRandom(name: string, color: number = 0x00ff00): Agent {
     const agent = new Agent(name, color);
 
-    agent.maxHp = 80 + Math.floor(Math.random() * 40); // 80-120
+    agent.maxHp = 5 + Math.floor(Math.random() * 5); // 5-9
     agent.hp = agent.maxHp;
     agent.attack = 3 + Math.floor(Math.random() * 5); // 3-7
     agent.mind = 3 + Math.floor(Math.random() * 5); // 3-7

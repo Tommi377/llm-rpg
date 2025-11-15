@@ -155,12 +155,12 @@ export class GamePlayScene extends Phaser.Scene {
               content: decision.action,
               color: agent.color,
             },
-            {
-              type: "agent",
-              speaker: agent.name,
-              content: `💭 "${decision.reasoning}"`,
-              color: agent.color,
-            },
+            // {
+            //   type: "agent",
+            //   speaker: agent.name,
+            //   content: `💭 "${decision.reasoning}"`,
+            //   color: agent.color,
+            // },
           ],
           agent.name,
           agent.color,
@@ -206,15 +206,11 @@ export class GamePlayScene extends Phaser.Scene {
 
         // Show stat changes
         const changes: string[] = [];
-        if (result.statChange.hp !== 0)
+        if (result.statChange.hp > 0 || result.statChange.hp < 0)
           changes.push(
             `HP ${result.statChange.hp > 0 ? "+" : ""}${result.statChange.hp}`,
           );
-        if (result.statChange.attack !== 0)
-          changes.push(
-            `ATT ${result.statChange.attack > 0 ? "+" : ""}${result.statChange.attack}`,
-          );
-        if (result.statChange.mind !== 0)
+        if (result.statChange.mind > 0 || result.statChange.mind < 0)
           changes.push(
             `MIND ${result.statChange.mind > 0 ? "+" : ""}${result.statChange.mind}`,
           );

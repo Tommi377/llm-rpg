@@ -2,12 +2,12 @@
  * Main menu scene for party setup
  */
 
-import Phaser from 'phaser';
-import { Agent } from '../../agents/Agent';
-import { AgentAI } from '../../agents/AgentAI';
-import { GameState } from '../GameState';
-import { ChatLog } from '../../ui/ChatLog';
-import { ollama } from '../../llm/OllamaClient';
+import Phaser from "phaser";
+import { Agent } from "../../agents/Agent";
+import { AgentAI } from "../../agents/AgentAI";
+import { GameState } from "../GameState";
+import { ChatLog } from "../../ui/ChatLog";
+import { ollama } from "../../llm/OllamaClient";
 
 export class MainMenuScene extends Phaser.Scene {
   private chatLog!: ChatLog;
@@ -16,7 +16,7 @@ export class MainMenuScene extends Phaser.Scene {
   private agentColors: number[] = [0x005000, 0x0088ff, 0xff00ff];
 
   constructor() {
-    super({ key: 'MainMenuScene' });
+    super({ key: "MainMenuScene" });
   }
 
   create(): void {
@@ -28,21 +28,27 @@ export class MainMenuScene extends Phaser.Scene {
     this.chatLog.clear();
 
     // Welcome message
-    this.chatLog.system('Welcome to LLM Squad RPG!');
-    this.chatLog.system('In this game, your squad of agents acts autonomously based on AI reasoning.');
-    this.chatLog.system('You guide them with a "doctrine" - strategic instructions they follow.');
-    this.chatLog.system('First, let\'s check your Ollama connection and create your party...');
+    this.chatLog.system("Welcome to LLM Squad RPG!");
+    this.chatLog.system(
+      "In this game, your squad of agents acts autonomously based on AI reasoning.",
+    );
+    this.chatLog.system(
+      'You guide them with a "doctrine" - strategic instructions they follow.',
+    );
+    this.chatLog.system(
+      "First, let's check your Ollama connection and create your party...",
+    );
 
     // Draw title
     const title = this.add.text(
       this.cameras.main.centerX,
       100,
-      'LLM SQUAD RPG',
+      "LLM SQUAD RPG",
       {
-        fontSize: '48px',
-        color: '#00ff00',
-        fontFamily: 'Courier New',
-      }
+        fontSize: "48px",
+        color: "#00ff00",
+        fontFamily: "Courier New",
+      },
     );
     title.setOrigin(0.5);
 
@@ -50,12 +56,12 @@ export class MainMenuScene extends Phaser.Scene {
     const subtitle = this.add.text(
       this.cameras.main.centerX,
       160,
-      'Autonomous AI-Powered Adventurers',
+      "Autonomous AI-Powered Adventurers",
       {
-        fontSize: '18px',
-        color: '#ffffff',
-        fontFamily: 'Courier New',
-      }
+        fontSize: "18px",
+        color: "#ffffff",
+        fontFamily: "Courier New",
+      },
     );
     subtitle.setOrigin(0.5);
 
@@ -68,28 +74,28 @@ export class MainMenuScene extends Phaser.Scene {
   private async initializeGame(): Promise<void> {
     try {
       // Check Ollama connection
-      this.chatLog.system('Checking Ollama connection...');
+      this.chatLog.system("Checking Ollama connection...");
 
       const isConnected = await ollama.checkConnection();
 
       if (!isConnected) {
-        this.chatLog.system('ERROR: Could not connect to Ollama!');
-        this.chatLog.system('Please make sure Ollama is running:');
-        this.chatLog.system('1. Install Ollama from https://ollama.ai');
-        this.chatLog.system('2. Run: ollama run llama3.2');
-        this.chatLog.system('3. Keep it running and refresh this page');
+        this.chatLog.system("ERROR: Could not connect to Ollama!");
+        this.chatLog.system("Please make sure Ollama is running:");
+        this.chatLog.system("1. Install Ollama from https://ollama.ai");
+        this.chatLog.system("2. Run: ollama run llama3.2");
+        this.chatLog.system("3. Keep it running and refresh this page");
         return;
       }
 
-      this.chatLog.system('✓ Connected to Ollama');
+      this.chatLog.system("✓ Connected to Ollama");
 
       // List available models
       const models = await ollama.listModels();
       if (models.length > 0) {
-        this.chatLog.system(`Available models: ${models.join(', ')}`);
+        this.chatLog.system(`Available models: ${models.join(", ")}`);
       }
 
-      this.chatLog.system('Creating your party of 3 agents...');
+      this.chatLog.system("Creating your party of 3 agents...");
 
       // Create input forms for agent names
       this.showAgentNameInput();
@@ -102,11 +108,13 @@ export class MainMenuScene extends Phaser.Scene {
     const centerX = this.cameras.main.centerX;
     let currentY = 200;
 
-    this.add.text(centerX, currentY, 'Name Your Agents:', {
-      fontSize: '20px',
-      color: '#ffffff',
-      fontFamily: 'Courier New',
-    }).setOrigin(0.5);
+    this.add
+      .text(centerX, currentY, "Name Your Agents:", {
+        fontSize: "20px",
+        color: "#ffffff",
+        fontFamily: "Courier New",
+      })
+      .setOrigin(0.5);
 
     currentY += 50;
 
@@ -114,7 +122,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Create 3 input fields
     for (let i = 0; i < 3; i++) {
-      const inputContainer = document.createElement('div');
+      const inputContainer = document.createElement("div");
       inputContainer.style.cssText = `
         position: absolute;
         left: calc(50% - 140px);
@@ -123,8 +131,8 @@ export class MainMenuScene extends Phaser.Scene {
         z-index: 100;
       `;
 
-      const input = document.createElement('input');
-      input.type = 'text';
+      const input = document.createElement("input");
+      input.type = "text";
       input.placeholder = `Agent ${i + 1} Name`;
       input.value = `Agent${i + 1}`;
       input.style.cssText = `
@@ -145,30 +153,35 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Create start button
     const buttonY = currentY + 3 * 60 + 30;
-    const startButton = this.add.text(centerX, buttonY, '[ START ADVENTURE ]', {
-      fontSize: '24px',
-      color: '#00ff00',
-      fontFamily: 'Courier New',
-    }).setOrigin(0.5);
+    const startButton = this.add
+      .text(centerX, buttonY, "[ START ADVENTURE ]", {
+        fontSize: "24px",
+        color: "#00ff00",
+        fontFamily: "Courier New",
+      })
+      .setOrigin(0.5);
 
     startButton.setInteractive({ useHandCursor: true });
 
-    startButton.on('pointerover', () => {
-      startButton.setColor('#00ff00');
+    startButton.on("pointerover", () => {
+      startButton.setColor("#00ff00");
       startButton.setScale(1.1);
     });
 
-    startButton.on('pointerout', () => {
-      startButton.setColor('#00ff00');
+    startButton.on("pointerout", () => {
+      startButton.setColor("#00ff00");
       startButton.setScale(1);
     });
 
-    startButton.on('pointerdown', async () => {
+    startButton.on("pointerdown", async () => {
       // Get names
-      this.agentNames = inputFields.map(input => input.value.trim() || `Agent${inputFields.indexOf(input) + 1}`);
+      this.agentNames = inputFields.map(
+        (input) =>
+          input.value.trim() || `Agent${inputFields.indexOf(input) + 1}`,
+      );
 
       // Remove input fields
-      inputFields.forEach(input => input.parentElement?.remove());
+      inputFields.forEach((input) => input.parentElement?.remove());
       startButton.destroy();
 
       await this.createParty();
@@ -176,7 +189,7 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private async createParty(): Promise<void> {
-    this.chatLog.system('Generating agent personalities...');
+    this.chatLog.system("Generating agent personalities...");
 
     const agents: Agent[] = [];
 
@@ -195,30 +208,34 @@ export class MainMenuScene extends Phaser.Scene {
         agent.setPersonality(personality);
 
         // Stream the personality info with thinking indicator
-        await this.chatLog.streamMessages([
-          {
-            type: 'agent',
-            speaker: name,
-            content: `Personality: ${personality.personality}`,
-            color,
-          },
-          {
-            type: 'agent',
-            speaker: name,
-            content: `Flaw: ${personality.flaw}`,
-            color,
-          },
-          {
-            type: 'agent',
-            speaker: name,
-            content: `Signature Skill: ${personality.signatureSkill}`,
-            color,
-          },
-          {
-            type: 'system',
-            content: `Stats: HP ${agent.maxHp} | ATT ${agent.attack} | MIND ${agent.mind}`,
-          },
-        ], name, color);
+        await this.chatLog.streamMessages(
+          [
+            {
+              type: "agent",
+              speaker: name,
+              content: `Personality: ${personality.personality}`,
+              color,
+            },
+            {
+              type: "agent",
+              speaker: name,
+              content: `Flaw: ${personality.flaw}`,
+              color,
+            },
+            {
+              type: "agent",
+              speaker: name,
+              content: `Signature Skill: ${personality.signatureSkill}`,
+              color,
+            },
+            {
+              type: "system",
+              content: `Stats: HP ${agent.maxHp} | MIND ${agent.mind}`,
+            },
+          ],
+          name,
+          color,
+        );
 
         agents.push(agent);
       } catch (error) {
@@ -227,19 +244,21 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     if (agents.length === 0) {
-      this.chatLog.system('Failed to create party. Please refresh and try again.');
+      this.chatLog.system(
+        "Failed to create party. Please refresh and try again.",
+      );
       return;
     }
 
     // Set game state
     this.gameState.setAgents(agents);
 
-    this.chatLog.system('Party created successfully!');
-    this.chatLog.system('Your adventure begins...');
+    this.chatLog.system("Party created successfully!");
+    this.chatLog.system("Your adventure begins...");
 
     // Transition to gameplay
     this.time.delayedCall(2000, () => {
-      this.scene.start('GamePlayScene');
+      this.scene.start("GamePlayScene");
     });
   }
 }
