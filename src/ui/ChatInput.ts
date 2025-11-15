@@ -12,7 +12,7 @@ export class ChatInput {
   private historyIndex: number;
   private enabled: boolean;
 
-  constructor(inputId: string = 'chat-input') {
+  constructor(inputId: string = "chat-input") {
     const element = document.getElementById(inputId) as HTMLTextAreaElement;
     if (!element) {
       throw new Error(`Chat input '${inputId}' not found`);
@@ -32,28 +32,31 @@ export class ChatInput {
    */
   private setupEventListeners(): void {
     // Submit on Ctrl+Enter or Cmd+Enter
-    this.input.addEventListener('keydown', (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    this.input.addEventListener("keydown", (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         this.submit();
       }
 
       // History navigation with up/down arrows
-      if (e.key === 'ArrowUp' && this.history.length > 0) {
+      if (e.key === "ArrowUp" && this.history.length > 0) {
         e.preventDefault();
         this.historyIndex = Math.max(0, this.historyIndex - 1);
-        this.input.value = this.history[this.historyIndex] || '';
-      } else if (e.key === 'ArrowDown' && this.history.length > 0) {
+        this.input.value = this.history[this.historyIndex] || "";
+      } else if (e.key === "ArrowDown" && this.history.length > 0) {
         e.preventDefault();
-        this.historyIndex = Math.min(this.history.length, this.historyIndex + 1);
-        this.input.value = this.history[this.historyIndex] || '';
+        this.historyIndex = Math.min(
+          this.history.length,
+          this.historyIndex + 1,
+        );
+        this.input.value = this.history[this.historyIndex] || "";
       }
     });
 
     // Also allow form submission if wrapped in a form
-    const form = this.input.closest('form');
+    const form = this.input.closest("form");
     if (form) {
-      form.addEventListener('submit', (e: Event) => {
+      form.addEventListener("submit", (e: Event) => {
         e.preventDefault();
         this.submit();
       });
@@ -107,7 +110,7 @@ export class ChatInput {
    * Clear the input
    */
   clear(): void {
-    this.input.value = '';
+    this.input.value = "";
   }
 
   /**
@@ -116,12 +119,13 @@ export class ChatInput {
   setEnabled(enabled: boolean): void {
     this.enabled = enabled;
     this.input.disabled = !enabled;
+    this.input.value = "";
 
     if (enabled) {
       this.input.placeholder =
-        'Enter your doctrine for the agents...';
+        "Enter your doctrine for the agents...\n\nExamples:\n- Prioritize survival over glory\n- Protect the healer at all costs\n- Take calculated risks";
     } else {
-      this.input.placeholder = 'Waiting for agents to act...';
+      this.input.placeholder = "Waiting for agents to act...";
     }
   }
 
@@ -153,16 +157,16 @@ export class ChatInput {
   addSubmitButton(): HTMLButtonElement {
     const container = this.input.parentElement;
     if (!container) {
-      throw new Error('Input has no parent container');
+      throw new Error("Input has no parent container");
     }
 
     // Check if button already exists
-    let button = container.querySelector('.submit-button') as HTMLButtonElement;
+    let button = container.querySelector(".submit-button") as HTMLButtonElement;
 
     if (!button) {
-      button = document.createElement('button');
-      button.className = 'submit-button';
-      button.textContent = 'Submit (Ctrl+Enter)';
+      button = document.createElement("button");
+      button.className = "submit-button";
+      button.textContent = "Submit (Ctrl+Enter)";
       button.style.cssText = `
         width: 100%;
         padding: 12px;
@@ -177,15 +181,15 @@ export class ChatInput {
         transition: background 0.2s;
       `;
 
-      button.addEventListener('mouseenter', () => {
-        button.style.background = '#00cc00';
+      button.addEventListener("mouseenter", () => {
+        button.style.background = "#00cc00";
       });
 
-      button.addEventListener('mouseleave', () => {
-        button.style.background = '#00ff00';
+      button.addEventListener("mouseleave", () => {
+        button.style.background = "#00ff00";
       });
 
-      button.addEventListener('click', () => {
+      button.addEventListener("click", () => {
         this.submit();
       });
 

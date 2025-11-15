@@ -2,7 +2,7 @@
  * Helper class for building structured prompts with context
  */
 
-import type { Agent } from '../agents/Agent';
+import type { Agent } from "../agents/Agent";
 
 export class PromptBuilder {
   /**
@@ -28,15 +28,15 @@ Make the character interesting and unique. The flaw should be meaningful but not
     agent: Agent,
     eventDescription: string,
     doctrine: string,
-    recentHistory: string[]
+    recentHistory: string[],
   ): string {
-    const historyText = recentHistory.length > 0
-      ? `Recent history:\n${recentHistory.join('\n')}\n\n`
-      : '';
+    const historyText =
+      recentHistory.length > 0
+        ? `Recent history:\n${recentHistory.join("\n")}\n\n`
+        : "";
 
-    const traumaText = agent.trauma.length > 0
-      ? `Traumas: ${agent.trauma.join(', ')}\n`
-      : '';
+    const traumaText =
+      agent.trauma.length > 0 ? `Traumas: ${agent.trauma.join(", ")}\n` : "";
 
     return `You are ${agent.name}, an adventurer with the following profile:
 
@@ -46,7 +46,6 @@ Signature Skill: ${agent.signatureSkill}
 ${traumaText}
 Current Stats:
 - HP: ${agent.hp}/${agent.maxHp}
-- ATT: ${agent.attack}
 - MIND: ${agent.mind}
 
 ${historyText}Player's guidance: "${doctrine}"
@@ -57,8 +56,8 @@ How do you respond? Think about your personality, flaw, and current condition.
 
 Respond with JSON in this format:
 {
-  "action": "A brief description of what you do",
-  "reasoning": "Your in-character thought process (1-2 sentences)"
+  "action": "A brief description of what you do. Type: string",
+  "reasoning": "Your in-character thought process (1-2 sentences). Type: string"
 }`;
   }
 
@@ -69,20 +68,19 @@ Respond with JSON in this format:
     agent: Agent,
     enemies: Array<{ name: string; hp: number; maxHp: number }>,
     allies: Array<{ name: string; hp: number; maxHp: number }>,
-    doctrine: string
+    doctrine: string,
   ): string {
-    const enemyList = enemies.map((e, i) =>
-      `Enemy ${i + 1}: ${e.name} (HP: ${e.hp}/${e.maxHp})`
-    ).join('\n');
+    const enemyList = enemies
+      .map((e, i) => `Enemy ${i + 1}: ${e.name} (HP: ${e.hp}/${e.maxHp})`)
+      .join("\n");
 
     const allyList = allies
-      .filter(a => a.name !== agent.name)
-      .map(a => `${a.name} (HP: ${a.hp}/${a.maxHp})`)
-      .join('\n');
+      .filter((a) => a.name !== agent.name)
+      .map((a) => `${a.name} (HP: ${a.hp}/${a.maxHp})`)
+      .join("\n");
 
-    const traumaText = agent.trauma.length > 0
-      ? `Traumas: ${agent.trauma.join(', ')}\n`
-      : '';
+    const traumaText =
+      agent.trauma.length > 0 ? `Traumas: ${agent.trauma.join(", ")}\n` : "";
 
     return `You are ${agent.name} in combat.
 
@@ -92,11 +90,10 @@ Flaw: ${agent.flaw}
 ${traumaText}
 Your Stats:
 - HP: ${agent.hp}/${agent.maxHp}
-- ATT: ${agent.attack}
 - MIND: ${agent.mind}
 
 Allies:
-${allyList || 'None'}
+${allyList || "None"}
 
 Enemies:
 ${enemyList}
@@ -124,36 +121,20 @@ Respond with JSON:
    */
   static eventGeneration(
     party: Agent[],
-    eventType: 'normal' | 'combat',
+    eventType: "normal" | "combat",
     template: string,
-    previousEvents: string[]
+    previousEvents: string[],
   ): string {
-    const partyDescription = party.map(a =>
-      `${a.name} (${a.personality.slice(0, 50)}...)`
-    ).join(', ');
+    const partyDescription = party
+      .map((a) => `${a.name} (${a.personality.slice(0, 50)}...)`)
+      .join(", ");
 
-    const recentEvents = previousEvents.length > 0
-      ? `\nRecent events:\n${previousEvents.slice(-3).join('\n')}`
-      : '';
+    const recentEvents =
+      previousEvents.length > 0
+        ? `\nRecent events:\n${previousEvents.slice(-3).join("\n")}`
+        : "";
 
-    if (eventType === 'combat') {
-      return `Generate a combat encounter for this adventuring party: ${partyDescription}
-
-${recentEvents}
-
-Use this template as inspiration: ${template}
-
-Create an engaging combat scenario. Describe the enemies and the situation.
-
-Respond with JSON:
-{
-  "description": "Vivid description of the combat encounter (2-3 sentences)",
-  "enemies": [
-    {"name": "Enemy name", "type": "enemy type", "count": 1-3}
-  ]
-}`;
-    } else {
-      return `Generate a narrative event for this adventuring party: ${partyDescription}
+    return `Generate a narrative event for this adventuring party: ${partyDescription}
 
 ${recentEvents}
 
@@ -163,10 +144,9 @@ Create a challenging scenario that requires decision-making. The party must resp
 
 Respond with JSON:
 {
-  "description": "Engaging description of the situation (2-3 sentences)",
-  "challenge": "What makes this difficult or interesting"
+  "description": "Engaging description of the situation (2-3 sentences). Type: string",
+  "challenge": "What makes this difficult or interesting. Type: string"
 }`;
-    }
   }
 
   /**
@@ -175,11 +155,11 @@ Respond with JSON:
   static judgeEvent(
     eventDescription: string,
     agentActions: Array<{ name: string; action: string; reasoning: string }>,
-    doctrine: string
+    doctrine: string,
   ): string {
-    const actionsText = agentActions.map(a =>
-      `${a.name}: ${a.action}\n  Reasoning: ${a.reasoning}`
-    ).join('\n\n');
+    const actionsText = agentActions
+      .map((a) => `${a.name}: ${a.action}\n  Reasoning: ${a.reasoning}`)
+      .join("\n\n");
 
     return `Judge how well this adventuring party handled a situation.
 
@@ -197,7 +177,7 @@ Evaluate each agent's response based on:
 4. Risk management
 
 For each agent, assign an outcome: "good", "neutral", or "bad"
-Good outcomes grant stat bonuses (+1 to ATT or MIND)
+Good outcomes grant stat bonuses (+1 to HP or MIND)
 Bad outcomes may cause HP loss or trauma
 
 Respond with JSON:
@@ -205,11 +185,11 @@ Respond with JSON:
   "summary": "Brief narrative of what happened (2-3 sentences)",
   "results": [
     {
-      "name": "Agent name",
+      "name": "Agent name. Type: string",
       "outcome": "good|neutral|bad",
-      "statChange": {"hp": 0, "attack": 0, "mind": 0},
-      "trauma": "optional trauma description if outcome is bad",
-      "feedback": "Brief feedback on their action"
+      "statChange": {"hp": 0, "mind": 0},
+      "trauma": "optional trauma description if outcome is bad. Type: string",
+      "feedback": "Brief feedback on their action. Type: string"
     }
   ]
 }`;
@@ -222,7 +202,7 @@ Respond with JSON:
     agentName: string,
     action: string,
     reasoning: string,
-    targetInfo: string
+    targetInfo: string,
   ): string {
     return `An adventurer named ${agentName} is performing a combat action.
 
