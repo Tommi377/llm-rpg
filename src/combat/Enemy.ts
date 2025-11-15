@@ -8,6 +8,7 @@ export interface EnemyTemplate {
   baseHp: number;
   baseAttack: number;
   color: number;
+  spriteKey?: string; // ADDED
   abilities?: string[];
 }
 
@@ -18,6 +19,7 @@ export class Enemy {
   maxHp: number;
   attack: number;
   color: number;
+  spriteKey: string; // ADDED
   abilities: string[];
   isDefending: boolean;
 
@@ -28,6 +30,7 @@ export class Enemy {
     this.hp = template.baseHp;
     this.attack = template.baseAttack;
     this.color = template.color;
+    this.spriteKey = template.spriteKey ?? 'default'; // ADDED
     this.abilities = template.abilities || [];
     this.isDefending = false;
   }
@@ -56,7 +59,7 @@ export class Enemy {
     action: 'attack' | 'defend';
     target: number;
   } {
-    // Simple AI: attack the weakest target, or defend if low on HP
+    // Simple AI: defend if low HP
     if (this.hp < this.maxHp * 0.3) {
       return { action: 'defend', target: 0 };
     }
@@ -102,6 +105,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 40,
     baseAttack: 8,
     color: 0xff6666,
+    spriteKey: 'bandit',
   },
   wolf: {
     name: 'Dire Wolf',
@@ -109,6 +113,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 50,
     baseAttack: 10,
     color: 0x888888,
+    spriteKey: 'wolf',
     abilities: ['Pack tactics'],
   },
   zombie: {
@@ -117,6 +122,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 60,
     baseAttack: 7,
     color: 0x66ff66,
+    spriteKey: 'zombie',
   },
   cultist: {
     name: 'Cultist',
@@ -124,6 +130,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 35,
     baseAttack: 12,
     color: 0x9966ff,
+    spriteKey: 'cultist',
     abilities: ['Dark magic'],
   },
   ogre: {
@@ -132,6 +139,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 120,
     baseAttack: 15,
     color: 0xcc9966,
+    spriteKey: 'ogre',
   },
   spider: {
     name: 'Giant Spider',
@@ -139,6 +147,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 45,
     baseAttack: 9,
     color: 0x333333,
+    spriteKey: 'spider',
     abilities: ['Poison bite'],
   },
   elemental: {
@@ -147,6 +156,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 55,
     baseAttack: 13,
     color: 0xff9933,
+    spriteKey: 'elemental',
     abilities: ['Flame aura'],
   },
   guard: {
@@ -155,6 +165,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 50,
     baseAttack: 10,
     color: 0x6666ff,
+    spriteKey: 'guard',
   },
   goblin: {
     name: 'Goblin',
@@ -162,6 +173,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 30,
     baseAttack: 6,
     color: 0x66cc66,
+    spriteKey: 'goblin',
   },
   demon: {
     name: 'Lesser Demon',
@@ -169,6 +181,7 @@ export const ENEMY_TEMPLATES: Record<string, EnemyTemplate> = {
     baseHp: 80,
     baseAttack: 16,
     color: 0xcc0000,
+    spriteKey: 'demon',
     abilities: ['Dark pact', 'Fear aura'],
   },
 };
@@ -185,8 +198,9 @@ export class EnemyFactory {
     for (const data of enemyData) {
       // Try to find a matching template
       const templateKey = Object.keys(ENEMY_TEMPLATES).find(
-        key => ENEMY_TEMPLATES[key].name.toLowerCase().includes(data.name.toLowerCase()) ||
-               ENEMY_TEMPLATES[key].type.toLowerCase() === data.type.toLowerCase()
+        key =>
+          ENEMY_TEMPLATES[key].name.toLowerCase().includes(data.name.toLowerCase()) ||
+          ENEMY_TEMPLATES[key].type.toLowerCase() === data.type.toLowerCase()
       );
 
       const template = templateKey
@@ -197,6 +211,7 @@ export class EnemyFactory {
             baseHp: 40,
             baseAttack: 8,
             color: 0xff6666,
+            spriteKey: 'default'
           };
 
       // Create the specified number of enemies
