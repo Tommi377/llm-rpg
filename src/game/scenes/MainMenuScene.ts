@@ -76,19 +76,200 @@ export class MainMenuScene extends Phaser.Scene {
 
   private async initializeGame(): Promise<void> {
     try {
-      // Check Ollama connection
+      // Show provider selection first
       await this.chatLog.streamMessage({
         type: "system",
-        content: "Checking Ollama connection...",
+        content: "Please select your LLM provider:",
       });
 
-      const isConnected = await ollama.checkConnection();
+      this.showProviderSelection();
+    } catch (error) {
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: `Error: ${error}`,
+      });
+    }
+  }
 
-      if (!isConnected) {
-        await this.chatLog.streamMessage({
-          type: "system",
-          content: "ERROR: Could not connect to Ollama!",
-        });
+  private showProviderSelection(): void {
+    const centerX = this.cameras.main.centerX;
+    let currentY = 250;
+
+    // Provider selection
+    const providerText = this.add
+      .text(centerX, currentY, "Select Provider:", {
+        fontSize: "20px",
+        color: "#ffffff",
+        fontFamily: "Courier New",
+      })
+      .setOrigin(0.5);
+
+    currentY += 40;
+
+    // Create provider buttons
+    const ollamaButton = this.add
+      .text(centerX - 100, currentY, "[ Local Ollama ]", {
+        fontSize: "18px",
+        color: "#00ff00",
+        fontFamily: "Courier New",
+      })
+      .setOrigin(0.5);
+
+    const groqButton = this.add
+      .text(centerX + 100, currentY, "[ Groq API ]", {
+        fontSize: "18px",
+        color: "#00ff00",
+        fontFamily: "Courier New",
+      })
+      .setOrigin(0.5);
+
+    // Highlight current selection
+    const currentProvider = ollama.getProvider();
+    if (currentProvider === "ollama") {
+      ollamaButton.setScale(1.1);
+      ollamaButton.setColor("#ffff00");
+    } else {
+      groqButton.setScale(1.1);
+      groqButton.setColor("#ffff00");
+    }
+
+    // Make buttons interactive
+    ollamaButton.setInteractive({ useHandCursor: true });
+    groqButton.setInteractive({ useHandCursor: true });
+
+    ollamaButton.on("pointerover", () => {
+      ollamaButton.setScale(1.2);
+    });
+
+    ollamaButton.on("pointerout", () => {
+      ollamaButton.setScale(currentProvider === "ollama" ? 1.1 : 1);
+    });
+
+    groqButton.on("pointerover", () => {
+      groqButton.setScale(1.2);
+    });
+
+    groqButton.on("pointerout", () => {
+      groqButton.setScale(currentProvider === "groq" ? 1.1 : 1);
+    });
+
+    // Create API key input container (initially hidden)
+    const apiKeyContainer = document.createElement("div");
+    apiKeyContainer.style.cssText = `
+      position: absolute;
+      left: 50%;
+      top: ${currentY + 60}px;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: ${currentProvider === "groq" ? "block" : "none"};
+    `;
+
+    const apiKeyInput = document.createElement("input");
+    apiKeyInput.type = "password";
+    apiKeyInput.placeholder = "Enter Groq API Key";
+    apiKeyInput.value = ollama.getStoredApiKey() || "";
+    apiKeyInput.style.cssText = `
+      padding: 10px;
+      font-size: 16px;
+      font-family: 'Courier New', monospace;
+      background: #333;
+      color: #fff;
+      border: 2px solid #00ff00;
+      width: 300px;
+      text-align: center;
+    `;
+
+    apiKeyContainer.appendChild(apiKeyInput);
+    document.body.appendChild(apiKeyContainer);
+
+    // Continue button
+    const continueButton = this.add
+      .text(centerX, currentY + 120, "[ CONTINUE ]", {
+        fontSize: "24px",
+        color: "#00ff00",
+        fontFamily: "Courier New",
+      })
+      .setOrigin(0.5);
+
+    continueButton.setInteractive({ useHandCursor: true });
+
+    continueButton.on("pointerover", () => {
+      continueButton.setScale(1.1);
+    });
+
+    continueButton.on("pointerout", () => {
+      continueButton.setScale(1);
+    });
+
+    // Handle provider selection
+    let selectedProvider: "ollama" | "groq" = currentProvider;
+
+    ollamaButton.on("pointerdown", () => {
+      selectedProvider = "ollama";
+      ollamaButton.setColor("#ffff00");
+      ollamaButton.setScale(1.1);
+      groqButton.setColor("#00ff00");
+      groqButton.setScale(1);
+      apiKeyContainer.style.display = "none";
+    });
+
+    groqButton.on("pointerdown", () => {
+      selectedProvider = "groq";
+      groqButton.setColor("#ffff00");
+      groqButton.setScale(1.1);
+      ollamaButton.setColor("#00ff00");
+      ollamaButton.setScale(1);
+      apiKeyContainer.style.display = "block";
+    });
+
+    continueButton.on("pointerdown", async () => {
+      // Set provider and API key
+      if (selectedProvider === "groq") {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+          await this.chatLog.streamMessage({
+            type: "system",
+            content: "Please enter your Groq API key!",
+          });
+          return;
+        }
+        ollama.setProvider("groq", apiKey);
+        ollama.storeProvider("groq");
+      } else {
+        ollama.setProvider("ollama");
+        ollama.storeProvider("ollama");
+      }
+
+      // Clean up UI
+      providerText.destroy();
+      ollamaButton.destroy();
+      groqButton.destroy();
+      continueButton.destroy();
+      apiKeyContainer.remove();
+
+      // Check connection
+      await this.checkConnectionAndProceed();
+    });
+  }
+
+  private async checkConnectionAndProceed(): Promise<void> {
+    const provider = ollama.getProvider();
+    const providerName = provider === "ollama" ? "Ollama" : "Groq";
+
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: `Checking ${providerName} connection...`,
+    });
+
+    const isConnected = await ollama.checkConnection();
+
+    if (!isConnected) {
+      await this.chatLog.streamMessage({
+        type: "system",
+        content: `ERROR: Could not connect to ${providerName}!`,
+      });
+
+      if (provider === "ollama") {
         await this.chatLog.streamMessage({
           type: "system",
           content: "Please make sure Ollama is running:",
@@ -105,36 +286,40 @@ export class MainMenuScene extends Phaser.Scene {
           type: "system",
           content: "3. Keep it running and refresh this page",
         });
-        return;
-      }
-
-      await this.chatLog.streamMessage({
-        type: "system",
-        content: "✓ Connected to Ollama",
-      });
-
-      // List available models
-      const models = await ollama.listModels();
-      if (models.length > 0) {
+      } else {
         await this.chatLog.streamMessage({
           type: "system",
-          content: `Available models: ${models.join(", ")}`,
+          content: "Please check your API key and try again.",
+        });
+        await this.chatLog.streamMessage({
+          type: "system",
+          content: "Get your key at: https://console.groq.com/keys",
         });
       }
-
-      await this.chatLog.streamMessage({
-        type: "system",
-        content: "Creating your party of 3 agents...",
-      });
-
-      // Create input forms for agent names
-      this.showAgentNameInput();
-    } catch (error) {
-      await this.chatLog.streamMessage({
-        type: "system",
-        content: `Error: ${error}`,
-      });
+      return;
     }
+
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: `✓ Connected to ${providerName}`,
+    });
+
+    // List available models
+    const models = await ollama.listModels();
+    // if (models.length > 0) {
+    //   await this.chatLog.streamMessage({
+    //     type: "system",
+    //     content: `Using model: ${models[0]}`,
+    //   });
+    // }
+
+    await this.chatLog.streamMessage({
+      type: "system",
+      content: "Creating your party of 3 agents...",
+    });
+
+    // Create input forms for agent names
+    this.showAgentNameInput();
   }
 
   private showAgentNameInput(): void {
