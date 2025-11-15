@@ -102,7 +102,7 @@ export class ChatLog {
    */
   thinking(agent?: string, color?: number): void {
     // Set agent name
-    this.thinkingAgentSpan.textContent = agent || 'AI';
+    this.thinkingAgentSpan.textContent = agent || 'Game Master';
 
     // Set color if provided
     if (color !== undefined) {

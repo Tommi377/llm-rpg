@@ -2,13 +2,13 @@
  * Generates events using LLM and templates
  */
 
-import { Agent } from '../agents/Agent';
-import { ollama } from '../llm/OllamaClient';
-import { PromptBuilder } from '../llm/PromptBuilder';
-import { EventTemplateSelector } from './EventTemplates';
+import { Agent } from "../agents/Agent";
+import { ollama } from "../llm/OllamaClient";
+import { PromptBuilder } from "../llm/PromptBuilder";
+import { EventTemplateSelector } from "./EventTemplates";
 
 export interface GeneratedEvent {
-  type: 'normal' | 'combat';
+  type: "normal" | "combat";
   description: string;
   challenge?: string;
   enemies?: Array<{ name: string; type: string; count: number }>;
@@ -29,16 +29,18 @@ export class EventGenerator {
   async generateEvent(
     party: Agent[],
     eventCount: number,
-    forceCombat: boolean = false
   ): Promise<GeneratedEvent> {
     // Determine event type (60% combat, 40% normal, unless forced)
-    const eventType = forceCombat || Math.random() < 0.6 ? 'combat' : 'normal';
+    const eventType = "normal";
 
     // Get difficulty based on progression
     const difficulty = EventTemplateSelector.getWeightedDifficulty(eventCount);
 
     // Select template
-    const template = this.templateSelector.getRandomTemplate(eventType, difficulty);
+    const template = this.templateSelector.getRandomTemplate(
+      eventType,
+      difficulty,
+    );
 
     try {
       // Generate event using LLM
@@ -46,60 +48,30 @@ export class EventGenerator {
         party,
         eventType,
         template.template,
-        this.eventHistory
+        this.eventHistory,
       );
 
-      if (eventType === 'combat') {
-        const response = await ollama.generateJSON<{
-          description: string;
-          enemies: Array<{ name: string; type: string; count: number }>;
-        }>(prompt);
+      const response = await ollama.generateJSON<{
+        description: string;
+        challenge: string;
+      }>(prompt);
 
-        // Validate enemies
-        if (!response.enemies || response.enemies.length === 0) {
-          response.enemies = [{ name: 'Bandit', type: 'human', count: 2 }];
-        }
+      const event: GeneratedEvent = {
+        type: "normal",
+        description: response.description,
+        challenge: response.challenge,
+      };
 
-        const event: GeneratedEvent = {
-          type: 'combat',
-          description: response.description,
-          enemies: response.enemies,
-        };
-
-        this.eventHistory.push(`Combat: ${response.description}`);
-        return event;
-      } else {
-        const response = await ollama.generateJSON<{
-          description: string;
-          challenge: string;
-        }>(prompt);
-
-        const event: GeneratedEvent = {
-          type: 'normal',
-          description: response.description,
-          challenge: response.challenge,
-        };
-
-        this.eventHistory.push(`Event: ${response.description}`);
-        return event;
-      }
+      this.eventHistory.push(`Event: ${response.description}`);
+      return event;
     } catch (error) {
-      console.error('Failed to generate event:', error);
+      console.error("Failed to generate event:", error);
 
-      // Fallback events
-      if (eventType === 'combat') {
-        return {
-          type: 'combat',
-          description: template.template,
-          enemies: [{ name: 'Bandit', type: 'human', count: 2 }],
-        };
-      } else {
-        return {
-          type: 'normal',
-          description: template.template,
-          challenge: 'You must decide how to proceed carefully.',
-        };
-      }
+      return {
+        type: "normal",
+        description: template.template,
+        challenge: "You must decide how to proceed carefully.",
+      };
     }
   }
 
