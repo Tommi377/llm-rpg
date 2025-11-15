@@ -119,7 +119,7 @@ export class ChatInput {
 
     if (enabled) {
       this.input.placeholder =
-        'Enter your doctrine for the agents...\n\nExamples:\n- Prioritize survival over glory\n- Protect the healer at all costs\n- Take calculated risks';
+        'Enter your doctrine for the agents...';
     } else {
       this.input.placeholder = 'Waiting for agents to act...';
     }
