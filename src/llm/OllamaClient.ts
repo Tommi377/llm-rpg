@@ -113,6 +113,7 @@ export class OllamaClient {
   async generateJSON<T>(prompt: string): Promise<T> {
     const response = await this.generate(prompt, "json");
 
+    console.log("PROMPT", prompt, "\n\nRESPONSE\n\n", response);
     try {
       return JSON.parse(response) as T;
     } catch (error) {

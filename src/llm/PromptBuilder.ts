@@ -14,8 +14,8 @@ export class PromptBuilder {
 Return a JSON object with the following structure:
 {
   "personality": "A brief description of their personality (1-2 sentences)",
-  "flaw": "A single character flaw that affects decision-making",
-  "signatureSkill": "A special ability or skill they excel at"
+  "flaw": "A single character flaw that affects decision-making (1-2 sentences)",
+  "signatureSkill": "A special ability or skill they excel at (1-2 sentences)"
 }
 
 Make the character interesting and unique. The flaw should be meaningful but not crippling.`;
@@ -48,11 +48,13 @@ Current Stats:
 - HP: ${agent.hp}/${agent.maxHp}
 - MIND: ${agent.mind}
 
-${historyText}Player's guidance: "${doctrine}"
-
 Situation: ${eventDescription}
 
-How do you respond? Think about your personality, flaw, and current condition.
+${historyText}VERY IMPORTANT: Take account the leaders command. You should at least acknowledge the leaders command but you MUST try to do something that relating to the leaders command.
+
+LEADERS COMMAND : "${doctrine}" 
+
+How do you respond? Think about your personality, flaw, and current condition. Also take into account what the leader wants you to do.
 
 Respond with JSON in this format:
 {
@@ -188,7 +190,7 @@ Respond with JSON:
       "name": "Agent name. Type: string",
       "outcome": "good|neutral|bad",
       "statChange": {"hp": 0, "mind": 0},
-      "trauma": "optional trauma description if outcome is bad. Type: string",
+      "trauma": "optional trauma description if outcome is bad. Type: string or undefined if none",
       "feedback": "Brief feedback on their action. Type: string"
     }
   ]
