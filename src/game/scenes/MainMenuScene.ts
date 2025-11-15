@@ -29,10 +29,8 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Welcome message
     this.chatLog.system('Welcome to LLM Squad RPG!');
-    this.chatLog.system('');
     this.chatLog.system('In this game, your squad of agents acts autonomously based on AI reasoning.');
     this.chatLog.system('You guide them with a "doctrine" - strategic instructions they follow.');
-    this.chatLog.system('');
     this.chatLog.system('First, let\'s check your Ollama connection and create your party...');
 
     // Draw title
@@ -76,7 +74,6 @@ export class MainMenuScene extends Phaser.Scene {
 
       if (!isConnected) {
         this.chatLog.system('ERROR: Could not connect to Ollama!');
-        this.chatLog.system('');
         this.chatLog.system('Please make sure Ollama is running:');
         this.chatLog.system('1. Install Ollama from https://ollama.ai');
         this.chatLog.system('2. Run: ollama run llama3.2');
@@ -92,7 +89,6 @@ export class MainMenuScene extends Phaser.Scene {
         this.chatLog.system(`Available models: ${models.join(', ')}`);
       }
 
-      this.chatLog.system('');
       this.chatLog.system('Creating your party of 3 agents...');
 
       // Create input forms for agent names
@@ -222,10 +218,6 @@ export class MainMenuScene extends Phaser.Scene {
             type: 'system',
             content: `Stats: HP ${agent.maxHp} | ATT ${agent.attack} | MIND ${agent.mind}`,
           },
-          {
-            type: 'system',
-            content: '',
-          },
         ], name, color);
 
         agents.push(agent);
@@ -243,7 +235,6 @@ export class MainMenuScene extends Phaser.Scene {
     this.gameState.setAgents(agents);
 
     this.chatLog.system('Party created successfully!');
-    this.chatLog.system('');
     this.chatLog.system('Your adventure begins...');
 
     // Transition to gameplay

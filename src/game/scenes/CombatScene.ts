@@ -42,7 +42,6 @@ export class CombatScene extends Phaser.Scene {
     // Display event description
     this.chatLog.addSeparator('COMBAT ENCOUNTER');
     this.chatLog.combat(this.currentEvent.description);
-    this.chatLog.system('');
 
     // Create enemies
     if (this.currentEvent.enemies) {
@@ -54,7 +53,6 @@ export class CombatScene extends Phaser.Scene {
     this.displayCombatants();
 
     // Get player doctrine
-    this.chatLog.system('');
     this.chatLog.system('Enter your combat doctrine:');
 
     this.chatInput.setEnabled(true);
@@ -106,7 +104,6 @@ export class CombatScene extends Phaser.Scene {
     this.gameState.setDoctrine(doctrine);
 
     this.chatLog.player(`Combat Doctrine: "${doctrine}"`);
-    this.chatLog.system('');
     this.chatLog.system('Combat begins!');
 
     // Run combat with animations
@@ -145,7 +142,6 @@ export class CombatScene extends Phaser.Scene {
     if (victory) {
       this.gameState.clearEvent(true);
       this.chatLog.system('Your party emerged victorious!');
-      this.chatLog.system('');
       this.chatLog.system('Returning to adventure...');
 
       await this.delay(3000);
